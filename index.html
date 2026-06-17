@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Travel Finder — Best Flights & Hotels</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #1a56db;
+      --blue-dark: #1e3a8a;
+      --blue-light: #eff6ff;
+      --orange: #f97316;
+      --orange-light: #fff7ed;
+      --green: #16a34a;
+      --green-light: #f0fdf4;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
+      --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.05);
+      --shadow-lg: 0 10px 15px rgba(0,0,0,.07), 0 4px 6px rgba(0,0,0,.05);
+      --shadow-xl: 0 20px 25px rgba(0,0,0,.1), 0 10px 10px rgba(0,0,0,.04);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-lg: 16px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #1e40af 100%);
+      min-height: 100vh;
+      color: var(--gray-800);
+    }
+
+    /* ─── HERO HEADER ─── */
+    .hero {
+      text-align: center;
+      padding: 48px 24px 24px;
+      color: white;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+    .hero h1 span { color: #93c5fd; }
+    .hero p { font-size: 1.1rem; color: rgba(255,255,255,.7); max-width: 480px; margin: 0 auto; }
+
+    /* ─── MAIN CARD ─── */
+    .container { max-width: 900px; margin: 0 auto; padding: 0 16px 80px; }
+    .search-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      padding: 32px;
+      margin-top: 32px;
+    }
+
+    /* ─── API KEY ─── */
+    .api-key-bar {
+      background: var(--blue-light);
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .api-key-bar label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--blue);
+      white-space: nowrap;
+    }
+    .api-key-bar input {
+      flex: 1;
+      min-width: 200px;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-family: 'Courier New', monospace;
+      background: white;
+      color: var(--gray-700);
+      outline: none;
+    }
+    .api-key-bar input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,86,219,.12); }
+    .api-key-note { font-size: 11px; color: var(--gray-500); width: 100%; }
+
+    /* ─── SECTION LABELS ─── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--gray-400);
+      margin-bottom: 10px;
+    }
+
+    /* ─── FORM GRID ─── */
+    .form-grid { display: grid; gap: 20px; }
+    .row-2 { grid-template-columns: 1fr 1fr; }
+    .row-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .row-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+    @media (max-width: 640px) {
+      .row-2, .row-3, .row-4 { grid-template-columns: 1fr; }
+      .search-card { padding: 20px 16px; }
+    }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-600);
+    }
+    .field input, .field select {
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      color: var(--gray-800);
+      background: white;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .field input:focus, .field select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(26,86,219,.1);
+    }
+    .field input::placeholder { color: var(--gray-400); }
+
+    /* ─── DIVIDER ─── */
+    .divider {
+      border: none;
+      border-top: 1.5px solid var(--gray-100);
+      margin: 24px 0;
+    }
+
+    /* ─── TOGGLE SWITCHES ─── */
+    .toggle-group { display: flex; flex-direction: column; gap: 12px; }
+    .toggle-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+    .toggle-item input[type="checkbox"] { display: none; }
+    .toggle-track {
+      width: 44px;
+      height: 24px;
+      background: var(--gray-200);
+      border-radius: 999px;
+      position: relative;
+      transition: background .2s;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .toggle-track::after {
+      content: '';
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: transform .2s;
+      box-shadow: var(--shadow-sm);
+    }
+    .toggle-item input:checked + .toggle-track { background: var(--blue); }
+    .toggle-item input:checked + .toggle-track::after { transform: translateX(20px); }
+    .toggle-label { font-size: 14px; font-weight: 500; color: var(--gray-700); }
+    .toggle-sublabel { font-size: 12px; color: var(--gray-400); }
+
+    .flex-options { display: none; }
+    .flex-options.visible { display: block; margin-top: 8px; margin-left: 56px; }
+    .flex-options select {
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 7px 12px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      color: var(--gray-700);
+      background: white;
+      outline: none;
+    }
+    .flex-options select:focus { border-color: var(--blue); }
+
+    /* ─── HOTEL BRANDS ─── */
+    .brands-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .brand-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--gray-600);
+      cursor: pointer;
+      transition: all .15s;
+      user-select: none;
+      background: white;
+    }
+    .brand-chip:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+    .brand-chip.selected {
+      border-color: var(--blue);
+      background: var(--blue-light);
+      color: var(--blue);
+      font-weight: 600;
+    }
+    .brand-chip input { display: none; }
+
+    /* ─── SEARCH BUTTON ─── */
+    .search-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--blue) 0%, #2563eb 100%);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: transform .1s, box-shadow .1s, opacity .1s;
+      box-shadow: 0 4px 14px rgba(26,86,219,.4);
+      margin-top: 8px;
+      letter-spacing: .02em;
+    }
+    .search-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,86,219,.45); }
+    .search-btn:active { transform: translateY(0); }
+    .search-btn:disabled { opacity: .65; cursor: not-allowed; transform: none; }
+
+    /* ─── LOADING ─── */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 60px 24px;
+      background: white;
+      border-radius: var(--radius-lg);
+      margin-top: 24px;
+      box-shadow: var(--shadow-lg);
+    }
+    .loading.visible { display: block; }
+    .loading-spinner {
+      width: 56px;
+      height: 56px;
+      border: 4px solid var(--gray-100);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading h3 { font-size: 1.1rem; font-weight: 700; color: var(--gray-800); margin-bottom: 8px; }
+    .loading p { color: var(--gray-500); font-size: 14px; }
+    .loading-steps { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+    .loading-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--gray-400);
+      transition: color .3s;
+    }
+    .loading-step.active { color: var(--blue); font-weight: 600; }
+    .loading-step.done { color: var(--green); }
+
+    /* ─── ERROR ─── */
+    .error-box {
+      display: none;
+      background: #fef2f2;
+      border: 1.5px solid #fecaca;
+      border-radius: var(--radius-sm);
+      padding: 16px 20px;
+      margin-top: 24px;
+      color: #991b1b;
+      font-size: 14px;
+    }
+    .error-box.visible { display: flex; gap: 10px; align-items: flex-start; }
+
+    /* ─── RESULTS ─── */
+    #results { display: none; margin-top: 24px; }
+    #results.visible { display: block; }
+
+    .results-header {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      box-shadow: var(--shadow-lg);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .results-header h2 { font-size: 1.25rem; font-weight: 700; color: var(--gray-800); }
+    .results-header p { font-size: 13px; color: var(--gray-500); margin-top: 4px; }
+    .results-tag {
+      background: var(--green-light);
+      color: var(--green);
+      border: 1px solid #bbf7d0;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .results-section { margin-bottom: 24px; }
+    .results-section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .results-section-title span {
+      font-size: 11px;
+      background: var(--gray-100);
+      color: var(--gray-500);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    /* ─── OPTION CARDS ─── */
+    .options-list { display: flex; flex-direction: column; gap: 12px; }
+    .option-card {
+      background: white;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      box-shadow: var(--shadow);
+      transition: border-color .15s, box-shadow .15s;
+      position: relative;
+    }
+    .option-card:hover {
+      border-color: var(--blue);
+      box-shadow: var(--shadow-md);
+    }
+    .option-card.best-value {
+      border-color: var(--orange);
+      background: linear-gradient(to right, #fff7ed, white 40%);
+    }
+    .best-tag {
+      position: absolute;
+      top: -1px;
+      right: 20px;
+      background: var(--orange);
+      color: white;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 0 0 8px 8px;
+    }
+
+    /* Flight card layout */
+    .flight-card-body {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .flight-airline {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .airline-logo {
+      width: 40px;
+      height: 40px;
+      background: var(--gray-100);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .airline-name { font-weight: 700; font-size: 15px; color: var(--gray-800); }
+    .airline-flight { font-size: 12px; color: var(--gray-400); }
+    .flight-route {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      justify-content: center;
+      min-width: 200px;
+    }
+    .route-time { text-align: center; }
+    .route-time .time { font-size: 18px; font-weight: 700; color: var(--gray-800); }
+    .route-time .airport { font-size: 11px; color: var(--gray-400); font-weight: 600; }
+    .route-line {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .route-line-bar {
+      height: 2px;
+      background: linear-gradient(to right, var(--gray-300), var(--blue), var(--gray-300));
+      width: 100%;
+      border-radius: 2px;
+      position: relative;
+    }
+    .route-line-bar::before, .route-line-bar::after {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--blue);
+      border-radius: 50%;
+      position: absolute;
+      top: -2px;
+    }
+    .route-line-bar::before { left: -3px; }
+    .route-line-bar::after { right: -3px; }
+    .route-duration { font-size: 11px; color: var(--gray-400); font-weight: 600; }
+    .route-stops {
+      font-size: 10px;
+      color: var(--gray-400);
+      background: var(--gray-100);
+      border-radius: 999px;
+      padding: 2px 8px;
+    }
+    .route-stops.nonstop { color: var(--green); background: var(--green-light); }
+    .flight-price { text-align: right; }
+    .price-amount { font-size: 22px; font-weight: 800; color: var(--gray-900); }
+    .price-per { font-size: 11px; color: var(--gray-400); }
+    .price-total { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
+    .flight-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--gray-100);
+      color: var(--gray-600);
+    }
+    .badge.blue { background: var(--blue-light); color: var(--blue); }
+    .badge.green { background: var(--green-light); color: var(--green); }
+    .badge.orange { background: var(--orange-light); color: var(--orange); }
+
+    /* Hotel card layout */
+    .hotel-card-body {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .hotel-info { flex: 1; min-width: 200px; }
+    .hotel-name { font-size: 16px; font-weight: 700; color: var(--gray-800); }
+    .hotel-brand { font-size: 12px; color: var(--blue); font-weight: 600; margin-top: 1px; }
+    .hotel-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .stars { color: #f59e0b; font-size: 13px; }
+    .rating {
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--blue);
+      color: white;
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+    .hotel-location { font-size: 12px; color: var(--gray-500); }
+    .hotel-amenities { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .amenity {
+      font-size: 11px;
+      color: var(--gray-600);
+      background: var(--gray-100);
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-weight: 500;
+    }
+    .hotel-price { text-align: right; flex-shrink: 0; }
+
+    /* ─── BEST DEAL CARDS ─── */
+    .deals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .deal-card {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1a56db 100%);
+      border-radius: var(--radius);
+      padding: 22px;
+      color: white;
+      box-shadow: var(--shadow-lg);
+    }
+    .deal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+    .deal-label { font-size: 12px; font-weight: 700; opacity: .7; text-transform: uppercase; letter-spacing: .06em; }
+    .deal-savings {
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+    }
+    .deal-total { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+    .deal-currency { font-size: 1rem; vertical-align: super; margin-right: 2px; opacity: .8; }
+    .deal-total-label { font-size: 12px; opacity: .6; margin-top: 4px; }
+    .deal-breakdown { margin-top: 16px; display: flex; flex-direction: column; gap: 6px; }
+    .deal-row { display: flex; justify-content: space-between; font-size: 13px; opacity: .85; }
+    .deal-reason {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,.15);
+      font-size: 12px;
+      opacity: .75;
+      line-height: 1.5;
+    }
+    .deal-flight, .deal-hotel { font-size: 12px; opacity: .75; margin-top: 4px; }
+
+    /* ─── FILE:// WARNING ─── */
+    .file-warning {
+      display: none;
+      background: #fffbeb;
+      border: 2px solid #f59e0b;
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      color: #92400e;
+    }
+    .file-warning.visible { display: block; }
+    .file-warning h3 { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+    .file-warning p { font-size: 13px; line-height: 1.6; margin-bottom: 8px; }
+    .file-warning code {
+      background: rgba(0,0,0,.08);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+    .file-warning ol { margin: 8px 0 0 20px; font-size: 13px; line-height: 2; }
+
+    /* ─── FOOTER NOTE ─── */
+    .disclaimer {
+      text-align: center;
+      font-size: 12px;
+      color: rgba(255,255,255,.45);
+      margin-top: 32px;
+      padding-bottom: 24px;
+    }
+
+    /* ─── SCROLL REVEAL ─── */
+    .fade-in {
+      animation: fadeInUp .4s ease both;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── NEW SEARCH BUTTON ─── */
+    .new-search-btn {
+      background: none;
+      border: 1.5px solid rgba(255,255,255,.3);
+      color: white;
+      padding: 8px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .new-search-btn:hover { background: rgba(255,255,255,.1); }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">✈️ AI-Powered Travel Search</div>
+  <h1>Find the <span>Best Deals</span><br/>on Flights & Hotels</h1>
+  <p>Enter your travel details and let AI find the lowest prices across airlines and hotel brands.</p>
+</div>
+
+<div class="container">
+
+  <!-- FILE:// WARNING -->
+  <div class="file-warning" id="fileWarning">
+    <h3>⚠️ Local Server Required — Start it first</h3>
+    <p>You're opening this file directly (<code>file://</code>). To allow API calls, a small local server must be running. API calls will be routed through <code>http://localhost:3001</code> automatically.</p>
+    <p><strong>Start the server (pick one):</strong></p>
+    <ol>
+      <li><strong>Double-click</strong> <code>start.bat</code> in the Travel Agent folder — the browser will open automatically</li>
+      <li><strong>Terminal:</strong> <code>node server.js</code> in the Travel Agent folder → then reload this page</li>
+    </ol>
+    <p style="margin-top:12px;">If the server is already running, click here to open it correctly:&nbsp;
+      <a href="http://localhost:3001" style="color:#b45309;font-weight:700;text-decoration:underline;">
+        http://localhost:3001
+      </a>
+    </p>
+  </div>
+
+  <!-- SEARCH CARD -->
+  <div class="search-card fade-in">
+
+    <!-- API KEY -->
+    <div class="api-key-bar">
+      <label>🔑 Claude API Key</label>
+      <input type="password" id="apiKey" placeholder="sk-ant-api03-..." autocomplete="off" />
+      <span class="api-key-note">Your key is stored locally in your browser and never sent to any server except Anthropic's API. Get a key at <strong>console.anthropic.com</strong></span>
+    </div>
+
+    <!-- ORIGIN & DESTINATION -->
+    <div class="section-label">Where are you traveling?</div>
+    <div class="form-grid row-2">
+      <div class="field">
+        <label>🛫 Flying From</label>
+        <input type="text" id="origin" placeholder="City or Airport (e.g., New York, JFK)" />
+      </div>
+      <div class="field">
+        <label>🛬 Flying To</label>
+        <input type="text" id="destination" placeholder="City or Airport (e.g., Miami, MIA)" />
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- DATES -->
+    <div class="section-label">When are you going?</div>
+    <div class="form-grid row-4">
+      <div class="field">
+        <label>📅 Departure Date</label>
+        <input type="date" id="depDate" />
+      </div>
+      <div class="field">
+        <label>📅 Return Date</label>
+        <input type="date" id="retDate" />
+      </div>
+      <div class="field">
+        <label>👤 Travelers</label>
+        <select id="travelers">
+          <option value="1">1 Traveler</option>
+          <option value="2" selected>2 Travelers</option>
+          <option value="3">3 Travelers</option>
+          <option value="4">4 Travelers</option>
+          <option value="5">5+ Travelers</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>💼 Cabin Class</label>
+        <select id="cabin">
+          <option value="Economy" selected>Economy</option>
+          <option value="Premium Economy">Premium Economy</option>
+          <option value="Business">Business Class</option>
+          <option value="First">First Class</option>
+        </select>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- FLEXIBLE OPTIONS -->
+    <div class="section-label">Flexibility</div>
+    <div class="toggle-group">
+      <label class="toggle-item">
+        <input type="checkbox" id="flexDates" onchange="toggleFlexDates()" />
+        <span class="toggle-track"></span>
+        <span>
+          <div class="toggle-label">Flexible Dates</div>
+          <div class="toggle-sublabel">Search nearby dates for better prices</div>
+        </span>
+      </label>
+      <div class="flex-options" id="flexDatesOpts">
+        <select id="flexDaysRange">
+          <option value="3">± 3 days</option>
+          <option value="7" selected>± 7 days</option>
+          <option value="14">± 14 days</option>
+        </select>
+      </div>
+
+      <label class="toggle-item">
+        <input type="checkbox" id="flexLocation" onchange="toggleFlexLocation()" />
+        <span class="toggle-track"></span>
+        <span>
+          <div class="toggle-label">Flexible Destination</div>
+          <div class="toggle-sublabel">Include airports within 300 miles</div>
+        </span>
+      </label>
+      <div class="flex-options" id="flexLocationOpts">
+        <select id="flexMiles">
+          <option value="100">Within 100 miles</option>
+          <option value="200">Within 200 miles</option>
+          <option value="300" selected>Within 300 miles</option>
+        </select>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- HOTEL BRANDS -->
+    <div class="section-label">Preferred Hotel Brands <small style="font-size:10px;color:var(--gray-400);text-transform:none;letter-spacing:0;">(select any)</small></div>
+    <div class="brands-grid" id="brandsGrid">
+      <!-- generated by JS -->
+    </div>
+
+    <hr class="divider" />
+
+    <!-- BUDGET -->
+    <div class="section-label">Budget</div>
+    <div class="form-grid row-2">
+      <div class="field">
+        <label>💰 Total Budget (USD)</label>
+        <select id="budget">
+          <option value="any">No limit</option>
+          <option value="under1000">Under $1,000</option>
+          <option value="1000-2000">$1,000 – $2,000</option>
+          <option value="2000-3500">$2,000 – $3,500</option>
+          <option value="3500-6000">$3,500 – $6,000</option>
+          <option value="over6000">Over $6,000</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>⭐ Hotel Stars</label>
+        <select id="stars">
+          <option value="any">Any</option>
+          <option value="3">3 Stars+</option>
+          <option value="4" selected>4 Stars+</option>
+          <option value="5">5 Stars Only</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- SEARCH BUTTON -->
+    <button class="search-btn" id="searchBtn" onclick="searchTravel()">
+      🔍 Find Best Flights & Hotels
+    </button>
+
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading" id="loading">
+    <div class="loading-spinner"></div>
+    <h3>Searching for the best deals…</h3>
+    <p>Our AI is analyzing flights, hotels, and combinations</p>
+    <div class="loading-steps">
+      <div class="loading-step active" id="step1">✈️ &nbsp;Scanning flight options</div>
+      <div class="loading-step" id="step2">🏨 &nbsp;Comparing hotel prices</div>
+      <div class="loading-step" id="step3">🧮 &nbsp;Calculating best combinations</div>
+      <div class="loading-step" id="step4">✨ &nbsp;Preparing your results</div>
+    </div>
+  </div>
+
+  <!-- ERROR -->
+  <div class="error-box" id="errorBox">
+    <span style="font-size:20px">⚠️</span>
+    <div>
+      <strong>Something went wrong.</strong>
+      <div id="errorMsg" style="margin-top:4px"></div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+
+    <div class="results-header fade-in">
+      <div>
+        <h2 id="resultTitle">Travel Options Found</h2>
+        <p id="resultSubtitle"></p>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span class="results-tag" id="resultCount"></span>
+        <button class="new-search-btn" onclick="resetSearch()">← New Search</button>
+      </div>
+    </div>
+
+    <!-- Best Deals -->
+    <div class="results-section" id="dealsSection">
+      <div class="results-section-title">🏆 Best Value Combinations</div>
+      <div class="deals-grid" id="dealsList"></div>
+    </div>
+
+    <!-- Flights -->
+    <div class="results-section">
+      <div class="results-section-title">✈️ Flight Options <span id="flightCount"></span></div>
+      <div class="options-list" id="flightsList"></div>
+    </div>
+
+    <!-- Hotels -->
+    <div class="results-section">
+      <div class="results-section-title">🏨 Hotel Options <span id="hotelCount"></span></div>
+      <div class="options-list" id="hotelsList"></div>
+    </div>
+
+  </div>
+
+  <div class="disclaimer">
+    Prices are AI-estimated based on typical market rates and may not reflect real-time availability.<br/>
+    Always verify final prices on the airline and hotel's official website before booking.
+  </div>
+
+</div>
+
+<script>
+  // ─── API ENDPOINT ─────────────────────────────────────────────────────────
+  // Calls go to /api/proxy (Vercel serverless function) which forwards to
+  // Anthropic from Vercel's servers — bypasses corporate endpoint security.
+  const IS_FILE      = location.protocol === 'file:';
+  const IS_LOCALHOST = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  const API_ENDPOINT = '/api/proxy';
+
+  // ─── DETECT file:// ORIGIN — show server instructions ───
+  if (IS_FILE) {
+    document.getElementById('fileWarning').classList.add('visible');
+  }
+
+  // ─── HOTEL BRANDS ───
+  const BRANDS = [
+    "Marriott","Hilton","Hyatt","IHG","Westin","Sheraton","Ritz-Carlton",
+    "Four Seasons","W Hotels","Kimpton","Fairmont","Waldorf Astoria",
+    "Hampton Inn","Holiday Inn","Best Western","Wyndham","Radisson",
+    "Airbnb","Boutique"
+  ];
+
+  const brandsGrid = document.getElementById('brandsGrid');
+  BRANDS.forEach(brand => {
+    const chip = document.createElement('label');
+    chip.className = 'brand-chip';
+    chip.innerHTML = `<input type="checkbox" value="${brand}" />${brand}`;
+    chip.querySelector('input').addEventListener('change', e => {
+      chip.classList.toggle('selected', e.target.checked);
+    });
+    brandsGrid.appendChild(chip);
+  });
+
+  // ─── DEFAULT DATES ───
+  const today = new Date();
+  const dep = new Date(today); dep.setDate(dep.getDate() + 30);
+  const ret = new Date(today); ret.setDate(ret.getDate() + 37);
+  document.getElementById('depDate').value = dep.toISOString().slice(0,10);
+  document.getElementById('retDate').value = ret.toISOString().slice(0,10);
+
+  // ─── LOAD SAVED API KEY ───
+  const savedKey = localStorage.getItem('claude_api_key');
+  if (savedKey) document.getElementById('apiKey').value = savedKey;
+
+  // ─── TOGGLE HELPERS ───
+  function toggleFlexDates() {
+    const el = document.getElementById('flexDatesOpts');
+    el.classList.toggle('visible', document.getElementById('flexDates').checked);
+  }
+  function toggleFlexLocation() {
+    const el = document.getElementById('flexLocationOpts');
+    el.classList.toggle('visible', document.getElementById('flexLocation').checked);
+  }
+
+  // ─── GATHER FORM DATA ───
+  function getFormData() {
+    const brands = [...document.querySelectorAll('#brandsGrid input:checked')].map(i => i.value);
+    return {
+      origin: document.getElementById('origin').value.trim(),
+      destination: document.getElementById('destination').value.trim(),
+      depDate: document.getElementById('depDate').value,
+      retDate: document.getElementById('retDate').value,
+      travelers: document.getElementById('travelers').value,
+      cabin: document.getElementById('cabin').value,
+      flexDates: document.getElementById('flexDates').checked,
+      flexDaysRange: document.getElementById('flexDaysRange').value,
+      flexLocation: document.getElementById('flexLocation').checked,
+      flexMiles: document.getElementById('flexMiles').value,
+      brands: brands,
+      budget: document.getElementById('budget').value,
+      stars: document.getElementById('stars').value,
+    };
+  }
+
+  // ─── BUILD PROMPT ───
+  function buildPrompt(d) {
+    const brandStr = d.brands.length ? d.brands.join(', ') : 'Any brand';
+    const budgetStr = d.budget === 'any' ? 'No budget limit' : d.budget;
+    const nights = Math.round((new Date(d.retDate) - new Date(d.depDate)) / 86400000);
+
+    return `You are a professional travel agent AI. The user wants to find flights and hotels.
+
+Search parameters:
+- Origin: ${d.origin}
+- Destination: ${d.destination}
+- Departure: ${d.depDate}
+- Return: ${d.retDate} (${nights} nights)
+- Travelers: ${d.travelers}
+- Cabin: ${d.cabin}
+- Flexible dates: ${d.flexDates ? `Yes, ±${d.flexDaysRange} days` : 'No'}
+- Flexible destination: ${d.flexLocation ? `Yes, within ${d.flexMiles} miles of ${d.destination}` : 'No'}
+- Preferred hotel brands: ${brandStr}
+- Budget: ${budgetStr} total
+- Hotel stars: ${d.stars === 'any' ? 'Any' : d.stars + '+'}
+
+Return ONLY a valid JSON object (no markdown fences, no explanation text, just raw JSON) using this exact structure:
+
+{
+  "summary": "One sentence overview of the trip options",
+  "flights": [
+    {
+      "airline": "Delta Air Lines",
+      "flight_number": "DL 421",
+      "departure_time": "08:15",
+      "arrival_time": "11:45",
+      "duration": "3h 30m",
+      "stops": 0,
+      "stop_city": "",
+      "price_per_person": 285,
+      "total_price": 570,
+      "cabin_class": "Economy",
+      "highlights": ["Nonstop", "Free checked bag", "Extra legroom available"],
+      "flexible_date": "",
+      "flexible_dest": ""
+    }
+  ],
+  "hotels": [
+    {
+      "name": "The Ritz-Carlton Coconut Grove",
+      "brand": "Ritz-Carlton",
+      "stars": 5,
+      "location": "Coconut Grove, Miami",
+      "distance_from_center": "3.2 miles from downtown",
+      "price_per_night": 420,
+      "total_price": 2940,
+      "amenities": ["Pool", "Spa", "Free WiFi", "Gym", "Restaurant", "Valet"],
+      "rating": 4.8,
+      "highlights": ["Bayfront views", "Award-winning spa", "Michelin-starred restaurant"],
+      "flexible_dest": ""
+    }
+  ],
+  "best_deals": [
+    {
+      "flight_index": 0,
+      "hotel_index": 0,
+      "total_trip_cost": 3510,
+      "flight_cost": 570,
+      "hotel_cost": 2940,
+      "savings_vs_typical": "18%",
+      "reason": "Best combination of price and quality for business travelers"
+    }
+  ]
+}
+
+Provide exactly 5 flight options and 5 hotel options (or fewer if flexible options are needed). If flexible dates/destinations are enabled, include 1-2 options using the alternative dates or nearby airports in the "flexible_date" or "flexible_dest" fields. Make prices realistic for the route and season. Return only raw JSON.`;
+  }
+
+  // ─── LOADING ANIMATION ───
+  let loadingTimer = null;
+  function animateLoading() {
+    const steps = ['step1','step2','step3','step4'];
+    let i = 0;
+    steps.forEach(s => {
+      document.getElementById(s).className = 'loading-step';
+    });
+    document.getElementById(steps[0]).classList.add('active');
+    loadingTimer = setInterval(() => {
+      document.getElementById(steps[i]).classList.remove('active');
+      document.getElementById(steps[i]).classList.add('done');
+      document.getElementById(steps[i]).textContent = '✅ ' + document.getElementById(steps[i]).textContent.slice(3);
+      i++;
+      if (i < steps.length) {
+        document.getElementById(steps[i]).classList.add('active');
+      } else {
+        clearInterval(loadingTimer);
+      }
+    }, 2200);
+  }
+
+  // ─── MAIN SEARCH ───
+  async function searchTravel() {
+    const apiKey = document.getElementById('apiKey').value.trim();
+    if (!apiKey) { showError('Please enter your Claude API key above.'); return; }
+    localStorage.setItem('claude_api_key', apiKey);
+
+    const d = getFormData();
+    if (!d.origin) { showError('Please enter your departure city or airport.'); return; }
+    if (!d.destination) { showError('Please enter your destination city or airport.'); return; }
+    if (!d.depDate || !d.retDate) { showError('Please select departure and return dates.'); return; }
+    if (new Date(d.retDate) <= new Date(d.depDate)) { showError('Return date must be after departure date.'); return; }
+
+    // Reset UI
+    hideError();
+    document.getElementById('results').classList.remove('visible');
+    document.getElementById('loading').classList.add('visible');
+    document.getElementById('searchBtn').disabled = true;
+    animateLoading();
+
+    const prompt = buildPrompt(d);
+
+    try {
+      const headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      };
+
+      const response = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model: 'claude-opus-4-6',
+          max_tokens: 4096,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error?.message || `API error ${response.status}`);
+      }
+
+      const data = await response.json();
+      const text = data.content[0].text.trim();
+
+      // Parse JSON (handle possible markdown fences)
+      let json;
+      try {
+        const clean = text.replace(/^```json?\s*/i,'').replace(/\s*```$/,'').trim();
+        json = JSON.parse(clean);
+      } catch(e) {
+        throw new Error('Could not parse AI response. Please try again.');
+      }
+
+      clearInterval(loadingTimer);
+      document.getElementById('loading').classList.remove('visible');
+      renderResults(json, d);
+
+    } catch (err) {
+      clearInterval(loadingTimer);
+      document.getElementById('loading').classList.remove('visible');
+      let msg = err.message;
+      if (msg === 'Failed to fetch' || msg.includes('NetworkError') || msg.includes('network')) {
+        if (IS_FILE) {
+          msg = 'Could not reach http://localhost:3001. Make sure the local server is running — double-click start.bat, then try again.';
+          document.getElementById('fileWarning').classList.add('visible');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          msg = 'Could not reach api.anthropic.com. Check that: (1) your internet connection is working, (2) the site is not blocked on this network. Original error: ' + err.message;
+        }
+      } else if (msg.includes('401') || msg.includes('invalid x-api-key') || msg.includes('authentication')) {
+        msg = 'Invalid API key. Double-check your key at console.anthropic.com.';
+      } else if (msg.includes('429') || msg.includes('rate limit')) {
+        msg = 'Rate limit reached. Wait a moment and try again.';
+      }
+      showError(msg);
+    } finally {
+      document.getElementById('searchBtn').disabled = false;
+    }
+  }
+
+  // ─── RENDER RESULTS ───
+  function renderResults(data, d) {
+    const nights = Math.round((new Date(d.retDate) - new Date(d.depDate)) / 86400000);
+    const travelers = parseInt(d.travelers);
+
+    document.getElementById('resultTitle').textContent = `${d.origin} → ${d.destination}`;
+    document.getElementById('resultSubtitle').textContent =
+      `${formatDate(d.depDate)} – ${formatDate(d.retDate)} · ${nights} nights · ${travelers} traveler${travelers>1?'s':''} · ${d.cabin}`;
+    document.getElementById('resultCount').textContent =
+      `${(data.flights||[]).length} flights + ${(data.hotels||[]).length} hotels found`;
+
+    // Best deals
+    const dealsList = document.getElementById('dealsList');
+    dealsList.innerHTML = '';
+    (data.best_deals || []).forEach((deal, i) => {
+      const flight = (data.flights || [])[deal.flight_index] || {};
+      const hotel = (data.hotels || [])[deal.hotel_index] || {};
+      dealsList.innerHTML += `
+        <div class="deal-card fade-in" style="animation-delay:${i*0.1}s">
+          <div class="deal-header">
+            <div class="deal-label">Best Deal #${i+1}</div>
+            ${deal.savings_vs_typical ? `<div class="deal-savings">Save ${deal.savings_vs_typical}</div>` : ''}
+          </div>
+          <div class="deal-total"><span class="deal-currency">$</span>${(deal.total_trip_cost||0).toLocaleString()}</div>
+          <div class="deal-total-label">Total for all travelers</div>
+          <div class="deal-breakdown">
+            <div class="deal-row"><span>✈️ Flights</span><span>$${(deal.flight_cost||flight.total_price||0).toLocaleString()}</span></div>
+            <div class="deal-row"><span>🏨 Hotel (${nights} nights)</span><span>$${(deal.hotel_cost||hotel.total_price||0).toLocaleString()}</span></div>
+          </div>
+          ${deal.reason ? `<div class="deal-reason">💡 ${deal.reason}</div>` : ''}
+          <div class="deal-flight">✈️ ${flight.airline || ''} ${flight.flight_number || ''}</div>
+          <div class="deal-hotel">🏨 ${hotel.name || ''}</div>
+        </div>`;
+    });
+
+    // Flights
+    document.getElementById('flightCount').textContent = (data.flights||[]).length;
+    const flightsList = document.getElementById('flightsList');
+    flightsList.innerHTML = '';
+    (data.flights || []).forEach((f, i) => {
+      const isFirst = i === 0;
+      flightsList.innerHTML += `
+        <div class="option-card ${isFirst ? 'best-value' : ''} fade-in" style="animation-delay:${0.1+i*0.08}s">
+          ${isFirst ? '<div class="best-tag">Best Value</div>' : ''}
+          <div class="flight-card-body">
+            <div class="flight-airline">
+              <div class="airline-logo">${airlineEmoji(f.airline)}</div>
+              <div>
+                <div class="airline-name">${f.airline}</div>
+                <div class="airline-flight">${f.flight_number} · ${f.cabin_class}</div>
+                ${f.flexible_date ? `<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:2px">📅 Alt date: ${f.flexible_date}</div>` : ''}
+                ${f.flexible_dest ? `<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:2px">📍 ${f.flexible_dest}</div>` : ''}
+              </div>
+            </div>
+            <div class="flight-route">
+              <div class="route-time">
+                <div class="time">${f.departure_time}</div>
+                <div class="airport">${extractCode(d.origin)}</div>
+              </div>
+              <div class="route-line">
+                <div class="route-duration">${f.duration}</div>
+                <div class="route-line-bar"></div>
+                <div class="route-stops ${f.stops===0?'nonstop':''}">${f.stops===0?'Nonstop':f.stops+' stop'+(f.stops>1?'s':'')+(f.stop_city?' · '+f.stop_city:'')}</div>
+              </div>
+              <div class="route-time">
+                <div class="time">${f.arrival_time}</div>
+                <div class="airport">${extractCode(d.destination)}</div>
+              </div>
+            </div>
+            <div class="flight-price">
+              <div class="price-amount">$${(f.price_per_person||0).toLocaleString()}</div>
+              <div class="price-per">per person</div>
+              <div class="price-total">$${(f.total_price||0).toLocaleString()} total</div>
+            </div>
+          </div>
+          <div class="flight-badges">
+            ${(f.highlights||[]).map(h => `<span class="badge ${h.toLowerCase().includes('nonstop')||h.toLowerCase().includes('direct')?'green':h.toLowerCase().includes('bag')?'blue':''}">${h}</span>`).join('')}
+          </div>
+        </div>`;
+    });
+
+    // Hotels
+    document.getElementById('hotelCount').textContent = (data.hotels||[]).length;
+    const hotelsList = document.getElementById('hotelsList');
+    hotelsList.innerHTML = '';
+    (data.hotels || []).forEach((h, i) => {
+      const isFirst = i === 0;
+      const stars = '★'.repeat(Math.min(5, h.stars||4)) + '☆'.repeat(Math.max(0, 5-(h.stars||4)));
+      hotelsList.innerHTML += `
+        <div class="option-card ${isFirst ? 'best-value' : ''} fade-in" style="animation-delay:${0.1+i*0.08}s">
+          ${isFirst ? '<div class="best-tag">Best Value</div>' : ''}
+          <div class="hotel-card-body">
+            <div class="hotel-info">
+              <div class="hotel-name">${h.name}</div>
+              <div class="hotel-brand">${h.brand}</div>
+              <div class="hotel-meta">
+                <div class="stars">${stars}</div>
+                <div class="rating">${h.rating}</div>
+                <div class="hotel-location">📍 ${h.location}${h.distance_from_center ? ' · '+h.distance_from_center : ''}</div>
+              </div>
+              ${h.flexible_dest ? `<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:4px">📍 Nearby: ${h.flexible_dest}</div>` : ''}
+              <div class="hotel-amenities">
+                ${(h.amenities||[]).map(a => `<span class="amenity">${a}</span>`).join('')}
+              </div>
+              <div class="flight-badges" style="margin-top:8px">
+                ${(h.highlights||[]).map(hl => `<span class="badge blue">${hl}</span>`).join('')}
+              </div>
+            </div>
+            <div class="hotel-price">
+              <div class="price-amount">$${(h.price_per_night||0).toLocaleString()}</div>
+              <div class="price-per">per night</div>
+              <div class="price-total">$${(h.total_price||0).toLocaleString()} total (${nights} nights)</div>
+            </div>
+          </div>
+        </div>`;
+    });
+
+    document.getElementById('results').classList.add('visible');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ─── HELPERS ───
+  function formatDate(str) {
+    if (!str) return '';
+    const d = new Date(str + 'T12:00:00');
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function extractCode(name) {
+    const m = name.match(/\b([A-Z]{3})\b/);
+    if (m) return m[1];
+    return name.substring(0,3).toUpperCase();
+  }
+
+  function airlineEmoji(airline) {
+    if (!airline) return '✈️';
+    const a = airline.toLowerCase();
+    if (a.includes('delta')) return '🔷';
+    if (a.includes('united')) return '🔵';
+    if (a.includes('american')) return '🦅';
+    if (a.includes('southwest')) return '🟡';
+    if (a.includes('jetblue')) return '🔷';
+    if (a.includes('alaska')) return '🗺️';
+    if (a.includes('spirit')) return '💛';
+    if (a.includes('frontier')) return '🦋';
+    if (a.includes('british')) return '🇬🇧';
+    if (a.includes('lufthansa')) return '🇩🇪';
+    if (a.includes('air france')) return '🇫🇷';
+    if (a.includes('emirates')) return '🇦🇪';
+    return '✈️';
+  }
+
+  function showError(msg) {
+    const box = document.getElementById('errorBox');
+    document.getElementById('errorMsg').textContent = msg;
+    box.classList.add('visible');
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function hideError() {
+    document.getElementById('errorBox').classList.remove('visible');
+  }
+
+  function resetSearch() {
+    document.getElementById('results').classList.remove('visible');
+    document.getElementById('searchCard')?.scrollIntoView({ behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
