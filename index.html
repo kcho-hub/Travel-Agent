@@ -684,6 +684,7 @@
         <span>🤖 AI Provider:</span>
         <button class="provider-btn active" id="btnClaude" onclick="setProvider('claude')">Claude (Anthropic)</button>
         <button class="provider-btn" id="btnOpenAI" onclick="setProvider('openai')">GPT-4o (OpenAI)</button>
+        <button class="provider-btn" id="btnGemini" onclick="setProvider('gemini')">Gemini (Google)</button>
       </div>
       <div class="key-row">
         <label id="keyLabel">🔑 Anthropic API Key</label>
@@ -907,18 +908,17 @@
     localStorage.setItem('ai_provider', p);
     document.getElementById('btnClaude').classList.toggle('active', p === 'claude');
     document.getElementById('btnOpenAI').classList.toggle('active', p === 'openai');
-    if (p === 'claude') {
-      document.getElementById('keyLabel').textContent = '🔑 Anthropic API Key';
-      document.getElementById('apiKey').placeholder = 'sk-ant-api03-...';
-      document.getElementById('keyNote').innerHTML = 'Get your key at <strong>console.anthropic.com</strong> — stored locally in your browser only.';
-    } else {
-      document.getElementById('keyLabel').textContent = '🔑 OpenAI API Key';
-      document.getElementById('apiKey').placeholder = 'sk-...';
-      document.getElementById('keyNote').innerHTML = 'Get your key at <strong>platform.openai.com</strong> — stored locally in your browser only.';
-    }
-    // Load saved key for this provider
-    const saved = localStorage.getItem(`api_key_${p}`);
-    document.getElementById('apiKey').value = saved || '';
+    document.getElementById('btnGemini').classList.toggle('active', p === 'gemini');
+    const info = {
+      claude:  { label: '🔑 Anthropic API Key', placeholder: 'sk-ant-api03-...', note: 'Get your key at <strong>console.anthropic.com</strong>' },
+      openai:  { label: '🔑 OpenAI API Key',    placeholder: 'sk-...',            note: 'Get your key at <strong>platform.openai.com</strong>' },
+      gemini:  { label: '🔑 Google AI API Key', placeholder: 'AIza...',           note: 'Get your free key at <strong>aistudio.google.com</strong> → Get API Key' },
+    };
+    const i = info[p];
+    document.getElementById('keyLabel').textContent = i.label;
+    document.getElementById('apiKey').placeholder = i.placeholder;
+    document.getElementById('keyNote').innerHTML = i.note + ' — stored locally in your browser only.';
+    document.getElementById('apiKey').value = localStorage.getItem(`api_key_${p}`) || '';
   }
 
   // Save key per provider when it changes
@@ -1107,17 +1107,17 @@ Provide exactly 5 flight options and 5 hotel options (or fewer if flexible optio
 
     try {
       // Build request per provider
-      const isOpenAI = currentProvider === 'openai';
-      const reqBody = isOpenAI
-        ? { model: 'gpt-4o', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] }
-        : { model: 'claude-opus-4-6', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] };
+      const reqBody =
+        currentProvider === 'openai'  ? { model: 'gpt-4o',         max_tokens: 4096, messages: [{ role: 'user', content: prompt }] } :
+        currentProvider === 'gemini'  ? { model: 'gemini-1.5-flash', prompt } :
+        /* claude */                    { model: 'claude-opus-4-6', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] };
 
       const headers = {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'x-provider': currentProvider
+        'Content-Type':  'application/json',
+        'x-api-key':     apiKey,
+        'x-provider':    currentProvider,
       };
-      if (!isOpenAI) headers['anthropic-version'] = '2023-06-01';
+      if (currentProvider === 'claude') headers['anthropic-version'] = '2023-06-01';
 
       const response = await fetch(API_ENDPOINT, {
         method: 'POST',

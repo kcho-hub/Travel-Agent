@@ -1,4 +1,4 @@
-// Vercel serverless function — proxies to Anthropic or OpenAI from Vercel's servers.
+// Vercel serverless function — proxies to Anthropic, OpenAI, or Google Gemini.
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,29 +14,41 @@ module.exports = async function handler(req, res) {
   if (!apiKey) return res.status(401).json({ error: { message: 'Missing x-api-key header' } });
 
   try {
-    let upstream, upstreamHeaders;
-
-    if (provider === 'openai') {
-      upstream = 'https://api.openai.com/v1/chat/completions';
-      upstreamHeaders = {
-        'Content-Type':  'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+    // ── Gemini ──────────────────────────────────────────────────────────────
+    if (provider === 'gemini') {
+      const prompt = req.body.prompt || '';
+      const geminiBody = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: 4096 },
       };
-    } else {
-      upstream = 'https://api.anthropic.com/v1/messages';
-      upstreamHeaders = {
-        'Content-Type':      'application/json',
-        'x-api-key':         apiKey,
-        'anthropic-version': '2023-06-01',
-      };
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(geminiBody) }
+      );
+      const data = await response.json();
+      if (!response.ok) return res.status(response.status).json({ error: { message: data.error?.message || 'Gemini error' } });
+      // Normalize to Claude-style response so the frontend parser works for all providers
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      return res.status(200).json({ content: [{ text }] });
     }
 
-    const response = await fetch(upstream, {
-      method:  'POST',
-      headers: upstreamHeaders,
-      body:    JSON.stringify(req.body),
-    });
+    // ── OpenAI ───────────────────────────────────────────────────────────────
+    if (provider === 'openai') {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+        body: JSON.stringify(req.body),
+      });
+      const data = await response.json();
+      return res.status(response.status).json(data);
+    }
 
+    // ── Claude (default) ─────────────────────────────────────────────────────
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify(req.body),
+    });
     const data = await response.json();
     return res.status(response.status).json(data);
 
