@@ -24,16 +24,17 @@ module.exports = async function handler(req, res) {
       if (!modelsResp.ok) {
         return res.status(modelsResp.status).json({ error: { message: modelsData.error?.message || 'Could not list Gemini models' } });
       }
+      const EXCLUDE = ['tts', 'embedding', 'aqa', 'retrieval', 'vision'];
       const available = (modelsData.models || [])
         .filter(m => m.supportedGenerationMethods?.includes('generateContent'))
-        .map(m => m.name.replace('models/', ''));
+        .map(m => m.name.replace('models/', ''))
+        .filter(m => !EXCLUDE.some(x => m.toLowerCase().includes(x)));
 
-      // Prefer: flash > pro > anything
-      if (!available.length) return res.status(400).json({ error: { message: 'No Gemini models available for this API key.' } });
+      if (!available.length) return res.status(400).json({ error: { message: 'No Gemini text models available for this API key.' } });
 
       // Sort: prefer flash, then pro, then others
       const ranked = [
-        ...available.filter(m => m.includes('flash')),
+        ...available.filter(m => m.includes('flash') && !m.includes('tts')),
         ...available.filter(m => m.includes('pro') && !m.includes('flash')),
         ...available.filter(m => !m.includes('flash') && !m.includes('pro')),
       ];
