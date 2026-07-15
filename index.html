@@ -680,35 +680,35 @@
 
     /* ─── NEW SEARCH BUTTON ─── */
     .new-search-btn {
-      background: none;
-      border: 1.5px solid rgba(255,255,255,.3);
-      color: white;
+      background: white;
+      border: 1.5px solid var(--gray-300);
+      color: var(--gray-700);
       padding: 8px 18px;
       border-radius: var(--radius-sm);
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      transition: background .15s;
+      transition: border-color .15s, color .15s;
     }
-    .new-search-btn:hover { background: rgba(255,255,255,.1); }
+    .new-search-btn:hover { border-color: var(--blue); color: var(--blue); }
 
     /* ─── EXPORT DROPDOWN ─── */
     .export-wrapper { position: relative; }
     .export-btn {
-      background: none;
-      border: 1.5px solid rgba(255,255,255,.3);
+      background: var(--blue);
+      border: none;
       color: white;
       padding: 8px 16px;
       border-radius: var(--radius-sm);
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      transition: background .15s;
+      transition: opacity .15s;
       display: flex;
       align-items: center;
       gap: 6px;
     }
-    .export-btn:hover { background: rgba(255,255,255,.1); }
+    .export-btn:hover { opacity: .85; }
     .export-menu {
       display: none;
       position: absolute;
