@@ -964,6 +964,22 @@
     return data.content?.[0]?.text?.trim() || '';
   }
 
+  function parseAIJson(text) {
+    if (!text) throw new Error('AI returned an empty response. Please try again.');
+    // 1. Direct parse
+    try { return JSON.parse(text); } catch(_) {}
+    // 2. Strip any markdown code fences (```json ... ``` or ``` ... ```)
+    const fenced = text.replace(/^```[\w]*\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    try { return JSON.parse(fenced); } catch(_) {}
+    // 3. Extract the first { ... } block (handles preamble/trailing text)
+    const objMatch = text.match(/\{[\s\S]*\}/);
+    if (objMatch) { try { return JSON.parse(objMatch[0]); } catch(_) {} }
+    // 4. Nothing worked — surface the raw snippet for debugging
+    const preview = text.length > 200 ? text.slice(0, 200) + '…' : text;
+    console.error('Unparseable AI response:', text);
+    throw new Error(`Could not parse AI response. Raw preview: ${preview}`);
+  }
+
   // ─── LOAD SAVED API KEY + PROVIDER ───
   const savedKey = localStorage.getItem('travel_api_key') || localStorage.getItem('claude_api_key');
   if (savedKey) document.getElementById('apiKey').value = savedKey;
@@ -1153,14 +1169,7 @@ Make all prices realistic for the route and season. Return only raw JSON.`;
       const data = await response.json();
       const text = extractText(data, provider);
 
-      // Parse JSON (handle possible markdown fences)
-      let json;
-      try {
-        const clean = text.replace(/^```json?\s*/i,'').replace(/\s*```$/,'').trim();
-        json = JSON.parse(clean);
-      } catch(e) {
-        throw new Error('Could not parse AI response. Please try again.');
-      }
+      const json = parseAIJson(text);
 
       clearInterval(loadingTimer);
       document.getElementById('loading').classList.remove('visible');
