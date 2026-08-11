@@ -83,58 +83,25 @@
       margin-top: 32px;
     }
 
-    /* ─── API KEY / PROVIDER ─── */
+    /* ─── API KEY ─── */
     .api-key-bar {
       background: var(--blue-light);
       border: 1px solid #bfdbfe;
       border-radius: var(--radius-sm);
-      padding: 14px 16px;
+      padding: 12px 16px;
       margin-bottom: 28px;
       display: flex;
-      flex-direction: column;
+      align-items: center;
       gap: 12px;
-    }
-    .provider-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
       flex-wrap: wrap;
     }
-    .provider-row span {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--blue);
-      margin-right: 4px;
-    }
-    .provider-btn {
-      padding: 6px 16px;
-      border-radius: 999px;
-      border: 1.5px solid #bfdbfe;
-      background: white;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--gray-600);
-      cursor: pointer;
-      transition: all .15s;
-    }
-    .provider-btn.active {
-      background: var(--blue);
-      border-color: var(--blue);
-      color: white;
-    }
-    .key-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .key-row label {
+    .api-key-bar label {
       font-size: 13px;
       font-weight: 600;
       color: var(--blue);
       white-space: nowrap;
     }
-    .key-row input {
+    .api-key-bar input {
       flex: 1;
       min-width: 200px;
       border: 1px solid #bfdbfe;
@@ -146,8 +113,8 @@
       color: var(--gray-700);
       outline: none;
     }
-    .key-row input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,86,219,.12); }
-    .api-key-note { font-size: 11px; color: var(--gray-500); }
+    .api-key-bar input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,86,219,.12); }
+    .api-key-note { font-size: 11px; color: var(--gray-500); width: 100%; }
 
     /* ─── SECTION LABELS ─── */
     .section-label {
@@ -301,6 +268,30 @@
     .search-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,86,219,.45); }
     .search-btn:active { transform: translateY(0); }
     .search-btn:disabled { opacity: .65; cursor: not-allowed; transform: none; }
+
+    /* ─── HOTEL-ONLY SEARCH BUTTON ─── */
+    .search-btn-hotels {
+      width: 100%;
+      padding: 13px;
+      background: white;
+      color: var(--blue);
+      border: 2px solid var(--blue);
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: background .15s, color .15s, box-shadow .15s;
+      margin-top: 10px;
+      letter-spacing: .02em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .search-btn-hotels:hover { background: var(--blue-light); box-shadow: 0 2px 8px rgba(26,86,219,.18); }
+    .search-btn-hotels:active { transform: translateY(0); }
+    .search-btn-hotels:disabled { opacity: .65; cursor: not-allowed; }
 
     /* ─── LOADING ─── */
     .loading {
@@ -504,51 +495,6 @@
       padding: 2px 8px;
     }
     .route-stops.nonstop { color: var(--green); background: var(--green-light); }
-
-    /* Layover chips */
-    .layover-details {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px dashed var(--gray-200);
-    }
-    .layover-chip {
-      font-size: 11px;
-      background: #fef9c3;
-      color: #854d0e;
-      border: 1px solid #fde68a;
-      border-radius: 999px;
-      padding: 3px 10px;
-      font-weight: 600;
-    }
-
-    /* Booking links */
-    .booking-links {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid var(--gray-100);
-    }
-    .booking-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 6px 12px;
-      border-radius: 6px;
-      text-decoration: none;
-      transition: opacity .15s;
-    }
-    .booking-link:hover { opacity: .8; }
-    .booking-link.google  { background: #e8f0fe; color: #1a73e8; }
-    .booking-link.kayak   { background: #fff0e6; color: #ff690f; }
-    .booking-link.expedia { background: #e6f0ff; color: #003580; }
-
     .flight-price { text-align: right; }
     .price-amount { font-size: 22px; font-weight: 800; color: var(--gray-900); }
     .price-per { font-size: 11px; color: var(--gray-400); }
@@ -680,67 +626,17 @@
 
     /* ─── NEW SEARCH BUTTON ─── */
     .new-search-btn {
-      background: white;
-      border: 1.5px solid var(--gray-300);
-      color: var(--gray-700);
+      background: none;
+      border: 1.5px solid rgba(255,255,255,.3);
+      color: white;
       padding: 8px 18px;
       border-radius: var(--radius-sm);
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      transition: border-color .15s, color .15s;
+      transition: background .15s;
     }
-    .new-search-btn:hover { border-color: var(--blue); color: var(--blue); }
-
-    /* ─── EXPORT DROPDOWN ─── */
-    .export-wrapper { position: relative; }
-    .export-btn {
-      background: var(--blue);
-      border: none;
-      color: white;
-      padding: 8px 16px;
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity .15s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .export-btn:hover { opacity: .85; }
-    .export-menu {
-      display: none;
-      position: absolute;
-      right: 0;
-      top: calc(100% + 6px);
-      background: white;
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius-sm);
-      box-shadow: var(--shadow-lg);
-      min-width: 190px;
-      z-index: 100;
-      overflow: hidden;
-    }
-    .export-menu.open { display: block; }
-    .export-menu-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 11px 16px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--gray-700);
-      cursor: pointer;
-      border: none;
-      background: none;
-      width: 100%;
-      text-align: left;
-      font-family: 'Inter', sans-serif;
-      transition: background .12s;
-    }
-    .export-menu-item:hover { background: var(--gray-50); color: var(--blue); }
-    .export-menu-item + .export-menu-item { border-top: 1px solid var(--gray-100); }
+    .new-search-btn:hover { background: rgba(255,255,255,.1); }
   </style>
 </head>
 <body>
@@ -773,21 +669,11 @@
   <!-- SEARCH CARD -->
   <div class="search-card fade-in">
 
-    <!-- AI PROVIDER + API KEY -->
+    <!-- API KEY -->
     <div class="api-key-bar">
-      <div class="provider-row">
-        <span>🤖 AI Provider:</span>
-        <button class="provider-btn active" id="btnClaude" onclick="setProvider('claude')">Claude (Anthropic)</button>
-        <button class="provider-btn" id="btnOpenAI" onclick="setProvider('openai')">GPT-4o (OpenAI)</button>
-        <button class="provider-btn" id="btnGemini" onclick="setProvider('gemini')">Gemini (Google)</button>
-      </div>
-      <div class="key-row">
-        <label id="keyLabel">🔑 Anthropic API Key</label>
-        <input type="password" id="apiKey" placeholder="sk-ant-api03-..." autocomplete="off" />
-      </div>
-      <span class="api-key-note" id="keyNote">
-        Get your key at <strong>console.anthropic.com</strong> — stored locally in your browser only.
-      </span>
+      <label>🔑 Claude API Key</label>
+      <input type="password" id="apiKey" placeholder="sk-ant-api03-..." autocomplete="off" />
+      <span class="api-key-note">Your key is stored locally in your browser and never sent to any server except Anthropic's API. Get a key at <strong>console.anthropic.com</strong></span>
     </div>
 
     <!-- ORIGIN & DESTINATION -->
@@ -839,8 +725,8 @@
 
     <hr class="divider" />
 
-    <!-- OPTIONS -->
-    <div class="section-label">Options</div>
+    <!-- FLEXIBLE OPTIONS -->
+    <div class="section-label">Flexibility</div>
     <div class="toggle-group">
       <label class="toggle-item">
         <input type="checkbox" id="flexDates" onchange="toggleFlexDates()" />
@@ -852,8 +738,6 @@
       </label>
       <div class="flex-options" id="flexDatesOpts">
         <select id="flexDaysRange">
-          <option value="1">± 1 day</option>
-          <option value="2">± 2 days</option>
           <option value="3">± 3 days</option>
           <option value="7" selected>± 7 days</option>
           <option value="14">± 14 days</option>
@@ -875,56 +759,49 @@
           <option value="300" selected>Within 300 miles</option>
         </select>
       </div>
-
-      <label class="toggle-item">
-        <input type="checkbox" id="includeHotel" onchange="toggleHotelSection()" checked />
-        <span class="toggle-track"></span>
-        <span>
-          <div class="toggle-label">Include Hotel Search</div>
-          <div class="toggle-sublabel">Uncheck for flights only</div>
-        </span>
-      </label>
     </div>
 
-    <!-- HOTEL SECTION (hidden when flights-only) -->
-    <div id="hotelFormSection">
-      <hr class="divider" />
+    <hr class="divider" />
 
-      <div class="section-label">Preferred Hotel Brands <small style="font-size:10px;color:var(--gray-400);text-transform:none;letter-spacing:0;">(select any)</small></div>
-      <div class="brands-grid" id="brandsGrid">
-        <!-- generated by JS -->
+    <!-- HOTEL BRANDS -->
+    <div class="section-label">Preferred Hotel Brands <small style="font-size:10px;color:var(--gray-400);text-transform:none;letter-spacing:0;">(select any)</small></div>
+    <div class="brands-grid" id="brandsGrid">
+      <!-- generated by JS -->
+    </div>
+
+    <hr class="divider" />
+
+    <!-- BUDGET -->
+    <div class="section-label">Budget</div>
+    <div class="form-grid row-2">
+      <div class="field">
+        <label>💰 Total Budget (USD)</label>
+        <select id="budget">
+          <option value="any">No limit</option>
+          <option value="under1000">Under $1,000</option>
+          <option value="1000-2000">$1,000 – $2,000</option>
+          <option value="2000-3500">$2,000 – $3,500</option>
+          <option value="3500-6000">$3,500 – $6,000</option>
+          <option value="over6000">Over $6,000</option>
+        </select>
       </div>
-
-      <hr class="divider" />
-
-      <div class="section-label">Budget</div>
-      <div class="form-grid row-2">
-        <div class="field">
-          <label>💰 Total Budget (USD)</label>
-          <select id="budget">
-            <option value="any">No limit</option>
-            <option value="under1000">Under $1,000</option>
-            <option value="1000-2000">$1,000 – $2,000</option>
-            <option value="2000-3500">$2,000 – $3,500</option>
-            <option value="3500-6000">$3,500 – $6,000</option>
-            <option value="over6000">Over $6,000</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>⭐ Hotel Stars</label>
-          <select id="stars">
-            <option value="any">Any</option>
-            <option value="3">3 Stars+</option>
-            <option value="4" selected>4 Stars+</option>
-            <option value="5">5 Stars Only</option>
-          </select>
-        </div>
+      <div class="field">
+        <label>⭐ Hotel Stars</label>
+        <select id="stars">
+          <option value="any">Any</option>
+          <option value="3">3 Stars+</option>
+          <option value="4" selected>4 Stars+</option>
+          <option value="5">5 Stars Only</option>
+        </select>
       </div>
     </div>
 
-    <!-- SEARCH BUTTON -->
+    <!-- SEARCH BUTTONS -->
     <button class="search-btn" id="searchBtn" onclick="searchTravel()">
       🔍 Find Best Flights & Hotels
+    </button>
+    <button class="search-btn-hotels" id="hotelSearchBtn" onclick="searchHotelsOnly()">
+      🏨 Search Hotels Only
     </button>
 
   </div>
@@ -961,14 +838,6 @@
       </div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span class="results-tag" id="resultCount"></span>
-        <div class="export-wrapper">
-          <button class="export-btn" onclick="toggleExportMenu(event)">⬇ Export ▾</button>
-          <div class="export-menu" id="exportMenu">
-            <button class="export-menu-item" onclick="exportHTML()">💾 Save as HTML file</button>
-            <button class="export-menu-item" onclick="exportText()">📄 Save as text file</button>
-            <button class="export-menu-item" onclick="emailResults()">✉️ Email results</button>
-          </div>
-        </div>
         <button class="new-search-btn" onclick="resetSearch()">← New Search</button>
       </div>
     </div>
@@ -986,7 +855,7 @@
     </div>
 
     <!-- Hotels -->
-    <div class="results-section" id="hotelsSection">
+    <div class="results-section">
       <div class="results-section-title">🏨 Hotel Options <span id="hotelCount"></span></div>
       <div class="options-list" id="hotelsList"></div>
     </div>
@@ -1002,40 +871,16 @@
 
 <script>
   // ─── API ENDPOINT ─────────────────────────────────────────────────────────
+  // Calls go to /api/proxy (Vercel serverless function) which forwards to
+  // Anthropic from Vercel's servers — bypasses corporate endpoint security.
   const IS_FILE      = location.protocol === 'file:';
   const IS_LOCALHOST = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
   const API_ENDPOINT = '/api/proxy';
 
+  // ─── DETECT file:// ORIGIN — show server instructions ───
   if (IS_FILE) {
     document.getElementById('fileWarning').classList.add('visible');
   }
-
-  // ─── AI PROVIDER SELECTION ───
-  let currentProvider = localStorage.getItem('ai_provider') || 'claude';
-
-  function setProvider(p) {
-    currentProvider = p;
-    localStorage.setItem('ai_provider', p);
-    document.getElementById('btnClaude').classList.toggle('active', p === 'claude');
-    document.getElementById('btnOpenAI').classList.toggle('active', p === 'openai');
-    document.getElementById('btnGemini').classList.toggle('active', p === 'gemini');
-    const info = {
-      claude:  { label: '🔑 Anthropic API Key', placeholder: 'sk-ant-api03-...', note: 'Get your key at <strong>console.anthropic.com</strong>' },
-      openai:  { label: '🔑 OpenAI API Key',    placeholder: 'sk-...',            note: 'Get your key at <strong>platform.openai.com</strong>' },
-      gemini:  { label: '🔑 Google AI API Key', placeholder: 'AIza...',           note: 'Get your free key at <strong>aistudio.google.com</strong> → Get API Key' },
-    };
-    const i = info[p];
-    document.getElementById('keyLabel').textContent = i.label;
-    document.getElementById('apiKey').placeholder = i.placeholder;
-    document.getElementById('keyNote').innerHTML = i.note + ' — stored locally in your browser only.';
-    document.getElementById('apiKey').value = localStorage.getItem('api_key_' + p) || '';
-  }
-
-  document.getElementById('apiKey').addEventListener('input', () => {
-    localStorage.setItem('api_key_' + currentProvider, document.getElementById('apiKey').value);
-  });
-
-  setProvider(currentProvider);
 
   // ─── HOTEL BRANDS ───
   const BRANDS = [
@@ -1046,11 +891,11 @@
   ];
 
   const brandsGrid = document.getElementById('brandsGrid');
-  BRANDS.forEach(function(brand) {
+  BRANDS.forEach(brand => {
     const chip = document.createElement('label');
     chip.className = 'brand-chip';
-    chip.innerHTML = '<input type="checkbox" value="' + brand + '" />' + brand;
-    chip.querySelector('input').addEventListener('change', function(e) {
+    chip.innerHTML = `<input type="checkbox" value="${brand}" />${brand}`;
+    chip.querySelector('input').addEventListener('change', e => {
       chip.classList.toggle('selected', e.target.checked);
     });
     brandsGrid.appendChild(chip);
@@ -1063,6 +908,10 @@
   document.getElementById('depDate').value = dep.toISOString().slice(0,10);
   document.getElementById('retDate').value = ret.toISOString().slice(0,10);
 
+  // ─── LOAD SAVED API KEY ───
+  const savedKey = localStorage.getItem('claude_api_key');
+  if (savedKey) document.getElementById('apiKey').value = savedKey;
+
   // ─── TOGGLE HELPERS ───
   function toggleFlexDates() {
     const el = document.getElementById('flexDatesOpts');
@@ -1072,32 +921,24 @@
     const el = document.getElementById('flexLocationOpts');
     el.classList.toggle('visible', document.getElementById('flexLocation').checked);
   }
-  function toggleHotelSection() {
-    const show = document.getElementById('includeHotel').checked;
-    document.getElementById('hotelFormSection').style.display = show ? '' : 'none';
-    document.getElementById('searchBtn').textContent = show
-      ? '🔍 Find Best Flights & Hotels'
-      : '✈️ Find Best Flights';
-  }
 
   // ─── GATHER FORM DATA ───
   function getFormData() {
-    const brands = Array.from(document.querySelectorAll('#brandsGrid input:checked')).map(function(i) { return i.value; });
+    const brands = [...document.querySelectorAll('#brandsGrid input:checked')].map(i => i.value);
     return {
-      origin:       document.getElementById('origin').value.trim(),
-      destination:  document.getElementById('destination').value.trim(),
-      depDate:      document.getElementById('depDate').value,
-      retDate:      document.getElementById('retDate').value,
-      travelers:    document.getElementById('travelers').value,
-      cabin:        document.getElementById('cabin').value,
-      flexDates:    document.getElementById('flexDates').checked,
-      flexDaysRange:document.getElementById('flexDaysRange').value,
+      origin: document.getElementById('origin').value.trim(),
+      destination: document.getElementById('destination').value.trim(),
+      depDate: document.getElementById('depDate').value,
+      retDate: document.getElementById('retDate').value,
+      travelers: document.getElementById('travelers').value,
+      cabin: document.getElementById('cabin').value,
+      flexDates: document.getElementById('flexDates').checked,
+      flexDaysRange: document.getElementById('flexDaysRange').value,
       flexLocation: document.getElementById('flexLocation').checked,
-      flexMiles:    document.getElementById('flexMiles').value,
-      includeHotel: document.getElementById('includeHotel').checked,
-      brands:       brands,
-      budget:       document.getElementById('budget').value,
-      stars:        document.getElementById('stars').value,
+      flexMiles: document.getElementById('flexMiles').value,
+      brands: brands,
+      budget: document.getElementById('budget').value,
+      stars: document.getElementById('stars').value,
     };
   }
 
@@ -1107,7 +948,42 @@
     const budgetStr = d.budget === 'any' ? 'No budget limit' : d.budget;
     const nights = Math.round((new Date(d.retDate) - new Date(d.depDate)) / 86400000);
 
-    const hotelSchema = d.includeHotel ? `
+    return `You are a professional travel agent AI. The user wants to find flights and hotels.
+
+Search parameters:
+- Origin: ${d.origin}
+- Destination: ${d.destination}
+- Departure: ${d.depDate}
+- Return: ${d.retDate} (${nights} nights)
+- Travelers: ${d.travelers}
+- Cabin: ${d.cabin}
+- Flexible dates: ${d.flexDates ? `Yes, ±${d.flexDaysRange} days` : 'No'}
+- Flexible destination: ${d.flexLocation ? `Yes, within ${d.flexMiles} miles of ${d.destination}` : 'No'}
+- Preferred hotel brands: ${brandStr}
+- Budget: ${budgetStr} total
+- Hotel stars: ${d.stars === 'any' ? 'Any' : d.stars + '+'}
+
+Return ONLY a valid JSON object (no markdown fences, no explanation text, just raw JSON) using this exact structure:
+
+{
+  "summary": "One sentence overview of the trip options",
+  "flights": [
+    {
+      "airline": "Delta Air Lines",
+      "flight_number": "DL 421",
+      "departure_time": "08:15",
+      "arrival_time": "11:45",
+      "duration": "3h 30m",
+      "stops": 0,
+      "stop_city": "",
+      "price_per_person": 285,
+      "total_price": 570,
+      "cabin_class": "Economy",
+      "highlights": ["Nonstop", "Free checked bag", "Extra legroom available"],
+      "flexible_date": "",
+      "flexible_dest": ""
+    }
+  ],
   "hotels": [
     {
       "name": "The Ritz-Carlton Coconut Grove",
@@ -1133,49 +1009,10 @@
       "savings_vs_typical": "18%",
       "reason": "Best combination of price and quality for business travelers"
     }
-  ],` : `"hotels": [], "best_deals": [],`;
-
-    return `You are a professional travel agent AI. The user wants to find ${d.includeHotel ? 'flights and hotels' : 'flights only'}.
-
-Search parameters:
-- Origin: ${d.origin}
-- Destination: ${d.destination}
-- Departure: ${d.depDate}
-- Return: ${d.retDate} (${nights} nights)
-- Travelers: ${d.travelers}
-- Cabin: ${d.cabin}
-- Flexible dates: ${d.flexDates ? 'Yes, ±' + d.flexDaysRange + ' days' : 'No'}
-- Flexible destination: ${d.flexLocation ? 'Yes, within ' + d.flexMiles + ' miles of ' + d.destination : 'No'}
-${d.includeHotel ? '- Preferred hotel brands: ' + brandStr + '\n- Budget: ' + budgetStr + ' total\n- Hotel stars: ' + (d.stars === 'any' ? 'Any' : d.stars + '+') : '- Hotel search: Not requested'}
-
-Return ONLY a valid JSON object (no markdown fences, no explanation text, just raw JSON) using this exact structure:
-
-{
-  "summary": "One sentence overview of the trip options",
-  "flights": [
-    {
-      "airline": "Delta Air Lines",
-      "flight_number": "DL 421",
-      "departure_time": "08:15",
-      "arrival_time": "11:45",
-      "duration": "3h 30m",
-      "stops": 1,
-      "stops_detail": [
-        {"airport": "ATL", "city": "Atlanta", "layover_duration": "1h 20m"}
-      ],
-      "price_per_person": 285,
-      "total_price": 570,
-      "cabin_class": "Economy",
-      "highlights": ["Free checked bag", "Extra legroom available"],
-      "flexible_date": "",
-      "flexible_dest": ""
-    }
-  ],
-  ${hotelSchema}
-  "placeholder": ""
+  ]
 }
 
-Provide exactly 5 flight options${d.includeHotel ? ' and 5 hotel options' : ''}. For connecting flights include stops_detail with the connecting airport code, city, and layover duration for each stop. If flexible dates/destinations are enabled, include 1-2 options using alternative dates or nearby airports. Make prices realistic for the route and season. Return only raw JSON.`;
+Provide exactly 5 flight options and 5 hotel options (or fewer if flexible options are needed). If flexible dates/destinations are enabled, include 1-2 options using the alternative dates or nearby airports in the "flexible_date" or "flexible_dest" fields. Make prices realistic for the route and season. Return only raw JSON.`;
   }
 
   // ─── LOADING ANIMATION ───
@@ -1183,13 +1020,14 @@ Provide exactly 5 flight options${d.includeHotel ? ' and 5 hotel options' : ''}.
   function animateLoading() {
     const steps = ['step1','step2','step3','step4'];
     let i = 0;
-    steps.forEach(function(s) {
+    steps.forEach(s => {
       document.getElementById(s).className = 'loading-step';
     });
     document.getElementById(steps[0]).classList.add('active');
-    loadingTimer = setInterval(function() {
+    loadingTimer = setInterval(() => {
       document.getElementById(steps[i]).classList.remove('active');
       document.getElementById(steps[i]).classList.add('done');
+      document.getElementById(steps[i]).textContent = '✅ ' + document.getElementById(steps[i]).textContent.slice(3);
       i++;
       if (i < steps.length) {
         document.getElementById(steps[i]).classList.add('active');
@@ -1202,15 +1040,16 @@ Provide exactly 5 flight options${d.includeHotel ? ' and 5 hotel options' : ''}.
   // ─── MAIN SEARCH ───
   async function searchTravel() {
     const apiKey = document.getElementById('apiKey').value.trim();
-    if (!apiKey) { showError('Please enter your API key above.'); return; }
-    localStorage.setItem('api_key_' + currentProvider, apiKey);
+    if (!apiKey) { showError('Please enter your Claude API key above.'); return; }
+    localStorage.setItem('claude_api_key', apiKey);
 
     const d = getFormData();
-    if (!d.origin)      { showError('Please enter your departure city or airport.'); return; }
+    if (!d.origin) { showError('Please enter your departure city or airport.'); return; }
     if (!d.destination) { showError('Please enter your destination city or airport.'); return; }
     if (!d.depDate || !d.retDate) { showError('Please select departure and return dates.'); return; }
     if (new Date(d.retDate) <= new Date(d.depDate)) { showError('Return date must be after departure date.'); return; }
 
+    // Reset UI
     hideError();
     document.getElementById('results').classList.remove('visible');
     document.getElementById('loading').classList.add('visible');
@@ -1220,33 +1059,31 @@ Provide exactly 5 flight options${d.includeHotel ? ' and 5 hotel options' : ''}.
     const prompt = buildPrompt(d);
 
     try {
-      const reqBody =
-        currentProvider === 'openai' ? { model: 'gpt-4o',          max_tokens: 4096, messages: [{ role: 'user', content: prompt }] } :
-        currentProvider === 'gemini' ? { model: 'gemini-1.5-flash', prompt: prompt } :
-        /* claude */                   { model: 'claude-opus-4-6',  max_tokens: 4096, messages: [{ role: 'user', content: prompt }] };
-
       const headers = {
         'Content-Type': 'application/json',
-        'x-api-key':    apiKey,
-        'x-provider':   currentProvider,
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
       };
-      if (currentProvider === 'claude') headers['anthropic-version'] = '2023-06-01';
 
       const response = await fetch(API_ENDPOINT, {
         method: 'POST',
-        headers: headers,
-        body: JSON.stringify(reqBody)
+        headers,
+        body: JSON.stringify({
+          model: 'claude-opus-4-6',
+          max_tokens: 4096,
+          messages: [{ role: 'user', content: prompt }]
+        })
       });
 
       if (!response.ok) {
-        const err = await response.json().catch(function() { return {}; });
-        throw new Error(err.error && err.error.message ? err.error.message : 'API error ' + response.status);
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error?.message || `API error ${response.status}`);
       }
 
       const data = await response.json();
-      const text = ((data.content && data.content[0] && data.content[0].text) ||
-                    (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '').trim();
+      const text = data.content[0].text.trim();
 
+      // Parse JSON (handle possible markdown fences)
       let json;
       try {
         const clean = text.replace(/^```json?\s*/i,'').replace(/\s*```$/,'').trim();
@@ -1269,10 +1106,10 @@ Provide exactly 5 flight options${d.includeHotel ? ' and 5 hotel options' : ''}.
           document.getElementById('fileWarning').classList.add('visible');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
-          msg = 'Network error. Check your internet connection. Original error: ' + err.message;
+          msg = 'Could not reach api.anthropic.com. Check that: (1) your internet connection is working, (2) the site is not blocked on this network. Original error: ' + err.message;
         }
       } else if (msg.includes('401') || msg.includes('invalid x-api-key') || msg.includes('authentication')) {
-        msg = 'Invalid API key. Double-check your key.';
+        msg = 'Invalid API key. Double-check your key at console.anthropic.com.';
       } else if (msg.includes('429') || msg.includes('rate limit')) {
         msg = 'Rate limit reached. Wait a moment and try again.';
       }
@@ -1282,150 +1119,296 @@ Provide exactly 5 flight options${d.includeHotel ? ' and 5 hotel options' : ''}.
     }
   }
 
-  // ─── EXPORT STATE ───
-  let _lastExportData = null;
-  let _lastExportForm = null;
+  // ─── HOTEL-ONLY SEARCH ───
+  async function searchHotelsOnly() {
+    const apiKey = document.getElementById('apiKey').value.trim();
+    if (!apiKey) { showError('Please enter your Claude API key above.'); return; }
+    localStorage.setItem('claude_api_key', apiKey);
+
+    const d = getFormData();
+    if (!d.destination) { showError('Please enter your destination city or airport.'); return; }
+
+    hideError();
+    document.getElementById('results').classList.remove('visible');
+    document.getElementById('loading').classList.add('visible');
+    document.getElementById('hotelSearchBtn').disabled = true;
+    document.getElementById('searchBtn').disabled = true;
+
+    // Relabel loading steps for hotel-only context
+    document.getElementById('step1').innerHTML = '🏨 &nbsp;Scanning hotel options';
+    document.getElementById('step2').innerHTML = '⭐ &nbsp;Checking ratings & reviews';
+    document.getElementById('step3').innerHTML = '💰 &nbsp;Comparing prices & deals';
+    document.getElementById('step4').innerHTML = '✨ &nbsp;Preparing your results';
+    animateLoading();
+
+    const nights = (d.depDate && d.retDate)
+      ? Math.max(1, Math.round((new Date(d.retDate) - new Date(d.depDate)) / 86400000))
+      : 7;
+    const brandStr = d.brands.length ? d.brands.join(', ') : 'Any brand';
+
+    const prompt = `You are a professional travel agent AI. Find hotels only for this search:
+- Destination: ${d.destination}
+- Check-in: ${d.depDate || 'flexible'}
+- Check-out: ${d.retDate || 'flexible'} (${nights} nights)
+- Travelers: ${d.travelers}
+- Preferred hotel brands: ${brandStr}
+- Budget: ${d.budget === 'any' ? 'No limit' : d.budget} total
+- Hotel stars: ${d.stars === 'any' ? 'Any' : d.stars + '+'}
+${d.flexLocation ? `- Flexible location: within ${d.flexMiles} miles of destination` : ''}
+
+Return ONLY a valid JSON object (no markdown fences, no explanation, just raw JSON):
+{
+  "summary": "Brief one-sentence overview of hotel options in ${d.destination}",
+  "flights": [],
+  "hotels": [
+    {
+      "name": "Hotel Name",
+      "brand": "Brand Name",
+      "stars": 4,
+      "location": "Neighborhood, City",
+      "distance_from_center": "0.5 miles from city center",
+      "price_per_night": 150,
+      "total_price": 1050,
+      "amenities": ["Free WiFi", "Pool", "Gym", "Breakfast"],
+      "rating": 4.6,
+      "highlights": ["Rooftop pool with city views", "Walking distance to attractions"],
+      "flexible_dest": ""
+    }
+  ],
+  "best_deals": []
+}
+Provide exactly 6 hotel options with realistic prices for ${d.destination}. Return only raw JSON.`;
+
+    try {
+      const response = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-opus-4-6',
+          max_tokens: 3000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error?.message || `API error ${response.status}`);
+      }
+
+      const data = await response.json();
+      const text = data.content[0].text.trim();
+      let json;
+      try {
+        const clean = text.replace(/^```json?\s*/i,'').replace(/\s*```$/,'').trim();
+        json = JSON.parse(clean);
+      } catch(e) {
+        throw new Error('Could not parse AI response. Please try again.');
+      }
+
+      clearInterval(loadingTimer);
+      document.getElementById('loading').classList.remove('visible');
+      renderHotelsOnly(json, d, nights);
+
+    } catch (err) {
+      clearInterval(loadingTimer);
+      document.getElementById('loading').classList.remove('visible');
+      let msg = err.message;
+      if (msg === 'Failed to fetch' || msg.includes('NetworkError') || msg.includes('network')) {
+        if (IS_FILE) {
+          msg = 'Could not reach http://localhost:3001. Make sure the local server is running — double-click start.bat, then try again.';
+          document.getElementById('fileWarning').classList.add('visible');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      } else if (msg.includes('401') || msg.includes('invalid x-api-key')) {
+        msg = 'Invalid API key. Double-check your key at console.anthropic.com.';
+      } else if (msg.includes('429') || msg.includes('rate limit')) {
+        msg = 'Rate limit reached. Wait a moment and try again.';
+      }
+      showError(msg);
+    } finally {
+      document.getElementById('hotelSearchBtn').disabled = false;
+      document.getElementById('searchBtn').disabled = false;
+      // Restore original loading step labels
+      document.getElementById('step1').innerHTML = '✈️ &nbsp;Scanning flight options';
+      document.getElementById('step2').innerHTML = '🏨 &nbsp;Comparing hotel prices';
+      document.getElementById('step3').innerHTML = '🧮 &nbsp;Calculating best combinations';
+      document.getElementById('step4').innerHTML = '✨ &nbsp;Preparing your results';
+    }
+  }
+
+  function renderHotelsOnly(data, d, nights) {
+    document.getElementById('resultTitle').textContent = `Hotels in ${d.destination}`;
+    document.getElementById('resultSubtitle').textContent =
+      `${formatDate(d.depDate)} – ${formatDate(d.retDate)} · ${nights} nights · ${d.travelers} traveler${parseInt(d.travelers)>1?'s':''}`;
+    document.getElementById('resultCount').textContent = `${(data.hotels||[]).length} hotels found`;
+
+    // Hide flights & best-deals sections; show only hotels
+    document.getElementById('dealsSection').style.display = 'none';
+    const flightsSection = document.querySelector('#results .results-section:nth-child(2)');
+    if (flightsSection) flightsSection.style.display = 'none';
+
+    document.getElementById('hotelCount').textContent = (data.hotels||[]).length;
+    const hotelsList = document.getElementById('hotelsList');
+    hotelsList.innerHTML = '';
+    (data.hotels || []).forEach((h, i) => {
+      const isFirst = i === 0;
+      const stars = '★'.repeat(Math.min(5, h.stars||4)) + '☆'.repeat(Math.max(0, 5-(h.stars||4)));
+      hotelsList.innerHTML += `
+        <div class="option-card ${isFirst ? 'best-value' : ''} fade-in" style="animation-delay:${0.1+i*0.08}s">
+          ${isFirst ? '<div class="best-tag">Best Value</div>' : ''}
+          <div class="hotel-card-body">
+            <div class="hotel-info">
+              <div class="hotel-name">${h.name}</div>
+              <div class="hotel-brand">${h.brand}</div>
+              <div class="hotel-meta">
+                <div class="stars">${stars}</div>
+                <div class="rating">${h.rating}</div>
+                <div class="hotel-location">📍 ${h.location}${h.distance_from_center ? ' · '+h.distance_from_center : ''}</div>
+              </div>
+              ${h.flexible_dest ? `<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:4px">📍 Nearby: ${h.flexible_dest}</div>` : ''}
+              <div class="hotel-amenities">
+                ${(h.amenities||[]).map(a => `<span class="amenity">${a}</span>`).join('')}
+              </div>
+              <div class="flight-badges" style="margin-top:8px">
+                ${(h.highlights||[]).map(hl => `<span class="badge blue">${hl}</span>`).join('')}
+              </div>
+            </div>
+            <div class="hotel-price">
+              <div class="price-amount">$${(h.price_per_night||0).toLocaleString()}</div>
+              <div class="price-per">per night</div>
+              <div class="price-total">$${(h.total_price||0).toLocaleString()} total (${nights} nights)</div>
+            </div>
+          </div>
+        </div>`;
+    });
+
+    document.getElementById('results').classList.add('visible');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   // ─── RENDER RESULTS ───
   function renderResults(data, d) {
-    _lastExportData = data;
-    _lastExportForm = d;
-
-    const nights   = Math.round((new Date(d.retDate) - new Date(d.depDate)) / 86400000);
+    // Restore sections that hotel-only search may have hidden
+    document.getElementById('dealsSection').style.display = '';
+    const flightsSection = document.querySelector('#results .results-section:nth-child(2)');
+    if (flightsSection) flightsSection.style.display = '';
+    const nights = Math.round((new Date(d.retDate) - new Date(d.depDate)) / 86400000);
     const travelers = parseInt(d.travelers);
 
-    // Booking search URLs (pre-filled search pages)
-    const originCode = extractCode(d.origin);
-    const destCode   = extractCode(d.destination);
-    const googleUrl  = 'https://www.google.com/travel/flights?q=Flights+from+' + encodeURIComponent(d.origin) + '+to+' + encodeURIComponent(d.destination);
-    const kayakUrl   = 'https://www.kayak.com/flights/' + originCode + '-' + destCode + '/' + d.depDate + '/' + d.retDate + '/' + travelers + 'adults';
-    const expediaUrl = 'https://www.expedia.com/Flights-Search?leg1=from:' + originCode + ',to:' + destCode + ',departure:' + d.depDate + 'TANYT&leg2=from:' + destCode + ',to:' + originCode + ',departure:' + d.retDate + 'TANYT&passengers=adults:' + travelers + '&mode=search';
-
-    document.getElementById('resultTitle').textContent = d.origin + ' \u2192 ' + d.destination;
+    document.getElementById('resultTitle').textContent = `${d.origin} → ${d.destination}`;
     document.getElementById('resultSubtitle').textContent =
-      formatDate(d.depDate) + ' \u2013 ' + formatDate(d.retDate) + ' \u00b7 ' + nights + ' nights \u00b7 ' + travelers + ' traveler' + (travelers > 1 ? 's' : '') + ' \u00b7 ' + d.cabin;
-    document.getElementById('resultCount').textContent = d.includeHotel
-      ? ((data.flights||[]).length + ' flights + ' + (data.hotels||[]).length + ' hotels found')
-      : ((data.flights||[]).length + ' flights found');
-
-    // Show/hide hotel and deals sections
-    document.getElementById('dealsSection').style.display  = d.includeHotel ? '' : 'none';
-    document.getElementById('hotelsSection').style.display = d.includeHotel ? '' : 'none';
+      `${formatDate(d.depDate)} – ${formatDate(d.retDate)} · ${nights} nights · ${travelers} traveler${travelers>1?'s':''} · ${d.cabin}`;
+    document.getElementById('resultCount').textContent =
+      `${(data.flights||[]).length} flights + ${(data.hotels||[]).length} hotels found`;
 
     // Best deals
     const dealsList = document.getElementById('dealsList');
     dealsList.innerHTML = '';
-    (data.best_deals || []).forEach(function(deal, i) {
+    (data.best_deals || []).forEach((deal, i) => {
       const flight = (data.flights || [])[deal.flight_index] || {};
-      const hotel  = (data.hotels  || [])[deal.hotel_index]  || {};
-      dealsList.innerHTML += '<div class="deal-card fade-in" style="animation-delay:' + (i*0.1) + 's">' +
-        '<div class="deal-header">' +
-          '<div class="deal-label">Best Deal #' + (i+1) + '</div>' +
-          (deal.savings_vs_typical ? '<div class="deal-savings">Save ' + deal.savings_vs_typical + '</div>' : '') +
-        '</div>' +
-        '<div class="deal-total"><span class="deal-currency">$</span>' + (deal.total_trip_cost||0).toLocaleString() + '</div>' +
-        '<div class="deal-total-label">Total for all travelers</div>' +
-        '<div class="deal-breakdown">' +
-          '<div class="deal-row"><span>✈️ Flights</span><span>$' + (deal.flight_cost||flight.total_price||0).toLocaleString() + '</span></div>' +
-          '<div class="deal-row"><span>🏨 Hotel (' + nights + ' nights)</span><span>$' + (deal.hotel_cost||hotel.total_price||0).toLocaleString() + '</span></div>' +
-        '</div>' +
-        (deal.reason ? '<div class="deal-reason">💡 ' + deal.reason + '</div>' : '') +
-        '<div class="deal-flight">✈️ ' + (flight.airline||'') + ' ' + (flight.flight_number||'') + '</div>' +
-        '<div class="deal-hotel">🏨 ' + (hotel.name||'') + '</div>' +
-        '</div>';
+      const hotel = (data.hotels || [])[deal.hotel_index] || {};
+      dealsList.innerHTML += `
+        <div class="deal-card fade-in" style="animation-delay:${i*0.1}s">
+          <div class="deal-header">
+            <div class="deal-label">Best Deal #${i+1}</div>
+            ${deal.savings_vs_typical ? `<div class="deal-savings">Save ${deal.savings_vs_typical}</div>` : ''}
+          </div>
+          <div class="deal-total"><span class="deal-currency">$</span>${(deal.total_trip_cost||0).toLocaleString()}</div>
+          <div class="deal-total-label">Total for all travelers</div>
+          <div class="deal-breakdown">
+            <div class="deal-row"><span>✈️ Flights</span><span>$${(deal.flight_cost||flight.total_price||0).toLocaleString()}</span></div>
+            <div class="deal-row"><span>🏨 Hotel (${nights} nights)</span><span>$${(deal.hotel_cost||hotel.total_price||0).toLocaleString()}</span></div>
+          </div>
+          ${deal.reason ? `<div class="deal-reason">💡 ${deal.reason}</div>` : ''}
+          <div class="deal-flight">✈️ ${flight.airline || ''} ${flight.flight_number || ''}</div>
+          <div class="deal-hotel">🏨 ${hotel.name || ''}</div>
+        </div>`;
     });
 
     // Flights
     document.getElementById('flightCount').textContent = (data.flights||[]).length;
     const flightsList = document.getElementById('flightsList');
     flightsList.innerHTML = '';
-    (data.flights || []).forEach(function(f, i) {
+    (data.flights || []).forEach((f, i) => {
       const isFirst = i === 0;
-      const stopsDetail = (f.stops_detail || []).map(function(s) {
-        return '<span class="layover-chip">🔄 ' + s.airport + (s.city ? ' \u00b7 ' + s.city : '') + ' \u2014 ' + s.layover_duration + ' layover</span>';
-      }).join('');
-      const badges = (f.highlights||[]).map(function(h) {
-        const cls = h.toLowerCase().includes('nonstop')||h.toLowerCase().includes('direct') ? 'green' :
-                    h.toLowerCase().includes('bag') ? 'blue' : '';
-        return '<span class="badge ' + cls + '">' + h + '</span>';
-      }).join('');
-
-      flightsList.innerHTML +=
-        '<div class="option-card ' + (isFirst ? 'best-value' : '') + ' fade-in" style="animation-delay:' + (0.1+i*0.08) + 's">' +
-          (isFirst ? '<div class="best-tag">Best Value</div>' : '') +
-          '<div class="flight-card-body">' +
-            '<div class="flight-airline">' +
-              '<div class="airline-logo">' + airlineEmoji(f.airline) + '</div>' +
-              '<div>' +
-                '<div class="airline-name">' + f.airline + '</div>' +
-                '<div class="airline-flight">' + f.flight_number + ' \u00b7 ' + f.cabin_class + '</div>' +
-                (f.flexible_date ? '<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:2px">📅 Alt date: ' + f.flexible_date + '</div>' : '') +
-                (f.flexible_dest ? '<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:2px">📍 ' + f.flexible_dest + '</div>' : '') +
-              '</div>' +
-            '</div>' +
-            '<div class="flight-route">' +
-              '<div class="route-time">' +
-                '<div class="time">' + f.departure_time + '</div>' +
-                '<div class="airport">' + extractCode(d.origin) + '</div>' +
-              '</div>' +
-              '<div class="route-line">' +
-                '<div class="route-duration">' + f.duration + '</div>' +
-                '<div class="route-line-bar"></div>' +
-                '<div class="route-stops ' + (f.stops===0?'nonstop':'') + '">' +
-                  (f.stops===0 ? 'Nonstop' : f.stops + ' stop' + (f.stops>1?'s':'')) +
-                '</div>' +
-              '</div>' +
-              '<div class="route-time">' +
-                '<div class="time">' + f.arrival_time + '</div>' +
-                '<div class="airport">' + extractCode(d.destination) + '</div>' +
-              '</div>' +
-            '</div>' +
-            '<div class="flight-price">' +
-              '<div class="price-amount">$' + (f.price_per_person||0).toLocaleString() + '</div>' +
-              '<div class="price-per">per person</div>' +
-              '<div class="price-total">$' + (f.total_price||0).toLocaleString() + ' total</div>' +
-            '</div>' +
-          '</div>' +
-          '<div class="flight-badges">' + badges + '</div>' +
-          (stopsDetail ? '<div class="layover-details">' + stopsDetail + '</div>' : '') +
-          '<div class="booking-links">' +
-            '<a href="' + googleUrl + '" target="_blank" rel="noopener" class="booking-link google">🔍 Google Flights</a>' +
-            '<a href="' + kayakUrl  + '" target="_blank" rel="noopener" class="booking-link kayak">🛫 Kayak</a>' +
-            '<a href="' + expediaUrl + '" target="_blank" rel="noopener" class="booking-link expedia">✈️ Expedia</a>' +
-          '</div>' +
-        '</div>';
+      flightsList.innerHTML += `
+        <div class="option-card ${isFirst ? 'best-value' : ''} fade-in" style="animation-delay:${0.1+i*0.08}s">
+          ${isFirst ? '<div class="best-tag">Best Value</div>' : ''}
+          <div class="flight-card-body">
+            <div class="flight-airline">
+              <div class="airline-logo">${airlineEmoji(f.airline)}</div>
+              <div>
+                <div class="airline-name">${f.airline}</div>
+                <div class="airline-flight">${f.flight_number} · ${f.cabin_class}</div>
+                ${f.flexible_date ? `<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:2px">📅 Alt date: ${f.flexible_date}</div>` : ''}
+                ${f.flexible_dest ? `<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:2px">📍 ${f.flexible_dest}</div>` : ''}
+              </div>
+            </div>
+            <div class="flight-route">
+              <div class="route-time">
+                <div class="time">${f.departure_time}</div>
+                <div class="airport">${extractCode(d.origin)}</div>
+              </div>
+              <div class="route-line">
+                <div class="route-duration">${f.duration}</div>
+                <div class="route-line-bar"></div>
+                <div class="route-stops ${f.stops===0?'nonstop':''}">${f.stops===0?'Nonstop':f.stops+' stop'+(f.stops>1?'s':'')+(f.stop_city?' · '+f.stop_city:'')}</div>
+              </div>
+              <div class="route-time">
+                <div class="time">${f.arrival_time}</div>
+                <div class="airport">${extractCode(d.destination)}</div>
+              </div>
+            </div>
+            <div class="flight-price">
+              <div class="price-amount">$${(f.price_per_person||0).toLocaleString()}</div>
+              <div class="price-per">per person</div>
+              <div class="price-total">$${(f.total_price||0).toLocaleString()} total</div>
+            </div>
+          </div>
+          <div class="flight-badges">
+            ${(f.highlights||[]).map(h => `<span class="badge ${h.toLowerCase().includes('nonstop')||h.toLowerCase().includes('direct')?'green':h.toLowerCase().includes('bag')?'blue':''}">${h}</span>`).join('')}
+          </div>
+        </div>`;
     });
 
     // Hotels
     document.getElementById('hotelCount').textContent = (data.hotels||[]).length;
     const hotelsList = document.getElementById('hotelsList');
     hotelsList.innerHTML = '';
-    (data.hotels || []).forEach(function(h, i) {
+    (data.hotels || []).forEach((h, i) => {
       const isFirst = i === 0;
       const stars = '★'.repeat(Math.min(5, h.stars||4)) + '☆'.repeat(Math.max(0, 5-(h.stars||4)));
-      hotelsList.innerHTML +=
-        '<div class="option-card ' + (isFirst ? 'best-value' : '') + ' fade-in" style="animation-delay:' + (0.1+i*0.08) + 's">' +
-          (isFirst ? '<div class="best-tag">Best Value</div>' : '') +
-          '<div class="hotel-card-body">' +
-            '<div class="hotel-info">' +
-              '<div class="hotel-name">' + h.name + '</div>' +
-              '<div class="hotel-brand">' + h.brand + '</div>' +
-              '<div class="hotel-meta">' +
-                '<div class="stars">' + stars + '</div>' +
-                '<div class="rating">' + h.rating + '</div>' +
-                '<div class="hotel-location">📍 ' + h.location + (h.distance_from_center ? ' \u00b7 ' + h.distance_from_center : '') + '</div>' +
-              '</div>' +
-              (h.flexible_dest ? '<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:4px">📍 Nearby: ' + h.flexible_dest + '</div>' : '') +
-              '<div class="hotel-amenities">' + (h.amenities||[]).map(function(a) { return '<span class="amenity">' + a + '</span>'; }).join('') + '</div>' +
-              '<div class="flight-badges" style="margin-top:8px">' + (h.highlights||[]).map(function(hl) { return '<span class="badge blue">' + hl + '</span>'; }).join('') + '</div>' +
-            '</div>' +
-            '<div class="hotel-price">' +
-              '<div class="price-amount">$' + (h.price_per_night||0).toLocaleString() + '</div>' +
-              '<div class="price-per">per night</div>' +
-              '<div class="price-total">$' + (h.total_price||0).toLocaleString() + ' total (' + nights + ' nights)</div>' +
-            '</div>' +
-          '</div>' +
-        '</div>';
+      hotelsList.innerHTML += `
+        <div class="option-card ${isFirst ? 'best-value' : ''} fade-in" style="animation-delay:${0.1+i*0.08}s">
+          ${isFirst ? '<div class="best-tag">Best Value</div>' : ''}
+          <div class="hotel-card-body">
+            <div class="hotel-info">
+              <div class="hotel-name">${h.name}</div>
+              <div class="hotel-brand">${h.brand}</div>
+              <div class="hotel-meta">
+                <div class="stars">${stars}</div>
+                <div class="rating">${h.rating}</div>
+                <div class="hotel-location">📍 ${h.location}${h.distance_from_center ? ' · '+h.distance_from_center : ''}</div>
+              </div>
+              ${h.flexible_dest ? `<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:4px">📍 Nearby: ${h.flexible_dest}</div>` : ''}
+              <div class="hotel-amenities">
+                ${(h.amenities||[]).map(a => `<span class="amenity">${a}</span>`).join('')}
+              </div>
+              <div class="flight-badges" style="margin-top:8px">
+                ${(h.highlights||[]).map(hl => `<span class="badge blue">${hl}</span>`).join('')}
+              </div>
+            </div>
+            <div class="hotel-price">
+              <div class="price-amount">$${(h.price_per_night||0).toLocaleString()}</div>
+              <div class="price-per">per night</div>
+              <div class="price-total">$${(h.total_price||0).toLocaleString()} total (${nights} nights)</div>
+            </div>
+          </div>
+        </div>`;
     });
 
     document.getElementById('results').classList.add('visible');
@@ -1448,17 +1431,17 @@ Provide exactly 5 flight options${d.includeHotel ? ' and 5 hotel options' : ''}.
   function airlineEmoji(airline) {
     if (!airline) return '✈️';
     const a = airline.toLowerCase();
-    if (a.includes('delta'))    return '🔷';
-    if (a.includes('united'))   return '🔵';
+    if (a.includes('delta')) return '🔷';
+    if (a.includes('united')) return '🔵';
     if (a.includes('american')) return '🦅';
-    if (a.includes('southwest'))return '🟡';
-    if (a.includes('jetblue'))  return '🔷';
-    if (a.includes('alaska'))   return '🗺️';
-    if (a.includes('spirit'))   return '💛';
+    if (a.includes('southwest')) return '🟡';
+    if (a.includes('jetblue')) return '🔷';
+    if (a.includes('alaska')) return '🗺️';
+    if (a.includes('spirit')) return '💛';
     if (a.includes('frontier')) return '🦋';
-    if (a.includes('british'))  return '🇬🇧';
-    if (a.includes('lufthansa'))return '🇩🇪';
-    if (a.includes('air france'))return '🇫🇷';
+    if (a.includes('british')) return '🇬🇧';
+    if (a.includes('lufthansa')) return '🇩🇪';
+    if (a.includes('air france')) return '🇫🇷';
     if (a.includes('emirates')) return '🇦🇪';
     return '✈️';
   }
@@ -1476,149 +1459,8 @@ Provide exactly 5 flight options${d.includeHotel ? ' and 5 hotel options' : ''}.
 
   function resetSearch() {
     document.getElementById('results').classList.remove('visible');
+    document.getElementById('searchCard')?.scrollIntoView({ behavior: 'smooth' });
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  // ─── EXPORT ───
-  function toggleExportMenu(e) {
-    e.stopPropagation();
-    document.getElementById('exportMenu').classList.toggle('open');
-  }
-  document.addEventListener('click', function() {
-    var m = document.getElementById('exportMenu');
-    if (m) m.classList.remove('open');
-  });
-
-  function buildExportText(data, d) {
-    const nights   = Math.round((new Date(d.retDate) - new Date(d.depDate)) / 86400000);
-    const travelers = parseInt(d.travelers);
-    const lines = [];
-    lines.push('AI TRAVEL FINDER — SEARCH RESULTS');
-    lines.push('==================================================');
-    lines.push('Route    : ' + d.origin + ' → ' + d.destination);
-    lines.push('Dates    : ' + formatDate(d.depDate) + ' – ' + formatDate(d.retDate) + ' (' + nights + ' nights)');
-    lines.push('Travelers: ' + travelers + '  |  Cabin: ' + d.cabin);
-    lines.push('');
-
-    if (d.includeHotel && (data.best_deals||[]).length) {
-      lines.push('★ BEST VALUE COMBINATIONS');
-      lines.push('----------------------------------------');
-      (data.best_deals||[]).forEach(function(deal, i) {
-        const f = (data.flights||[])[deal.flight_index] || {};
-        const h = (data.hotels||[])[deal.hotel_index]  || {};
-        lines.push('#' + (i+1) + '  Total: $' + (deal.total_trip_cost||0).toLocaleString() + '  (Save ' + (deal.savings_vs_typical||'') + ')');
-        lines.push('     ✈️  ' + (f.airline||'') + ' ' + (f.flight_number||'') + '  — $' + (deal.flight_cost||0).toLocaleString());
-        lines.push('     🏨  ' + (h.name||'') + '  — $' + (deal.hotel_cost||0).toLocaleString());
-        if (deal.reason) lines.push('     💡  ' + deal.reason);
-        lines.push('');
-      });
-    }
-
-    lines.push('✈️ FLIGHTS');
-    lines.push('----------------------------------------');
-    (data.flights||[]).forEach(function(f, i) {
-      lines.push((i+1) + '. ' + f.airline + ' ' + f.flight_number + '  |  $' + (f.price_per_person||0).toLocaleString() + '/person  ($' + (f.total_price||0).toLocaleString() + ' total)');
-      lines.push('   ' + f.departure_time + ' → ' + f.arrival_time + '  |  ' + f.duration + '  |  ' + (f.stops===0 ? 'Nonstop' : f.stops + ' stop(s)'));
-      if ((f.stops_detail||[]).length) {
-        lines.push('   Connections: ' + f.stops_detail.map(function(s) { return s.airport + ' (' + s.layover_duration + ')'; }).join(' → '));
-      }
-      if ((f.highlights||[]).length) lines.push('   ' + f.highlights.join('  ·  '));
-      lines.push('');
-    });
-
-    if (d.includeHotel && (data.hotels||[]).length) {
-      lines.push('🏨 HOTELS');
-      lines.push('----------------------------------------');
-      (data.hotels||[]).forEach(function(h, i) {
-        lines.push((i+1) + '. ' + h.name + '  (' + h.brand + ')  ' + '★'.repeat(h.stars||4));
-        lines.push('   $' + (h.price_per_night||0).toLocaleString() + '/night  —  $' + (h.total_price||0).toLocaleString() + ' total (' + nights + ' nights)');
-        lines.push('   📍 ' + h.location + (h.distance_from_center ? '  ·  ' + h.distance_from_center : ''));
-        if ((h.amenities||[]).length) lines.push('   ' + h.amenities.join('  ·  '));
-        lines.push('');
-      });
-    }
-
-    lines.push('──────────────────────────────────────────────────');
-    lines.push('Note: Prices are AI-estimated. Verify on airline/hotel sites before booking.');
-    lines.push('Generated: ' + new Date().toLocaleString());
-    return lines.join('\n');
-  }
-
-  function exportText() {
-    if (!_lastExportData) return;
-    const text = buildExportText(_lastExportData, _lastExportForm);
-    const blob = new Blob([text], { type: 'text/plain' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'travel-results-' + _lastExportForm.origin.replace(/\s/g,'-') + '-' + _lastExportForm.destination.replace(/\s/g,'-') + '.txt';
-    a.click();
-    URL.revokeObjectURL(a.href);
-    document.getElementById('exportMenu').classList.remove('open');
-  }
-
-  // Build a self-contained styled HTML snapshot of the current results
-  function buildVisualHTML(forPrint) {
-    const d = _lastExportForm;
-    // Grab all page CSS
-    const pageCSS = Array.from(document.querySelectorAll('style')).map(function(s) { return s.innerHTML; }).join('\n');
-    // Clone the results section so we can strip the export/nav buttons
-    const clone = document.getElementById('results').cloneNode(true);
-    // Remove the action buttons row (export + new search) from the clone
-    var actionsRow = clone.querySelector('.results-header > div:last-child');
-    if (actionsRow) actionsRow.remove();
-    // Force results visible in clone
-    clone.style.display = 'block';
-    // Remove fade-in animations so everything shows immediately in exported file
-    clone.querySelectorAll('.fade-in').forEach(function(el) { el.style.animation = 'none'; });
-
-    var printBtn = forPrint
-      ? '<div style="text-align:center;margin:24px 0 8px"><button onclick="window.print()" style="background:#1a56db;color:white;border:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">🖨️ Print / Save as PDF</button><p style="font-size:12px;color:#6b7280;margin-top:8px">To email: print → Save as PDF → attach the PDF to your email</p></div>'
-      : '';
-
-    return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8"/>\n' +
-      '<meta name="viewport" content="width=device-width,initial-scale=1"/>\n' +
-      '<title>Travel Results: ' + d.origin + ' \u2192 ' + d.destination + '</title>\n' +
-      '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>\n' +
-      '<style>' + pageCSS + '\n' +
-      'body{background:#f1f5f9;padding:24px;}\n' +
-      '#results{display:block!important;}\n' +
-      '.fade-in{animation:none!important;}\n' +
-      '@media print{body{background:white;padding:0;} .no-print{display:none;}}\n' +
-      '</style>\n</head>\n<body>\n' +
-      '<div class="no-print" style="max-width:900px;margin:0 auto 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">' +
-        '<div style="font-family:Inter,sans-serif;font-size:13px;color:#6b7280;">✈️ <strong>AI Travel Finder</strong> — exported ' + new Date().toLocaleString() + '</div>' +
-        printBtn +
-      '</div>\n' +
-      '<div style="max-width:900px;margin:0 auto;">\n' + clone.outerHTML + '\n</div>\n' +
-      '<p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:24px;font-family:Inter,sans-serif;">Prices are AI-estimated. Always verify on airline and hotel websites before booking.</p>\n' +
-      '</body>\n</html>';
-  }
-
-  function exportHTML() {
-    if (!_lastExportData) return;
-    const d    = _lastExportForm;
-    const html = buildVisualHTML(false);
-    const blob = new Blob([html], { type: 'text/html' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'travel-results-' + d.origin.replace(/\s/g,'-') + '-' + d.destination.replace(/\s/g,'-') + '.html';
-    a.click();
-    URL.revokeObjectURL(a.href);
-    document.getElementById('exportMenu').classList.remove('open');
-  }
-
-  function emailResults() {
-    if (!_lastExportData) return;
-    // Open styled results in a new tab with a Print/Save-as-PDF button
-    // (email clients can't receive inline HTML via mailto, so we give the user
-    //  a printable page they can save as PDF and attach to their email)
-    const html = buildVisualHTML(true);
-    const blob = new Blob([html], { type: 'text/html' });
-    const url  = URL.createObjectURL(blob);
-    window.open(url, '_blank');
-    // Revoke after a short delay to let the new tab load
-    setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
-    document.getElementById('exportMenu').classList.remove('open');
   }
 </script>
 </body>
