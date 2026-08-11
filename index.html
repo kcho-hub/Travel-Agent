@@ -293,6 +293,27 @@
     .search-btn-hotels:active { transform: translateY(0); }
     .search-btn-hotels:disabled { opacity: .65; cursor: not-allowed; }
 
+    /* ─── BOOKING LINKS ─── */
+    .booking-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--gray-100); }
+    .book-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 13px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: opacity .15s, transform .1s, box-shadow .15s;
+    }
+    .book-btn:hover { opacity: .88; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,.15); }
+    .book-btn-kayak   { background: #ff690f; color: #fff; }
+    .book-btn-google  { background: #4285f4; color: #fff; }
+    .book-btn-booking { background: #003580; color: #fff; }
+    .book-btn-direct  { background: var(--green); color: #fff; }
+
     /* ─── LOADING ─── */
     .loading {
       display: none;
@@ -934,8 +955,8 @@
 
   function buildRequestBody(prompt, provider) {
     if (provider === 'gemini') return JSON.stringify({ prompt });
-    if (provider === 'openai') return JSON.stringify({ model: 'gpt-4o', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] });
-    return JSON.stringify({ model: 'claude-opus-4-6', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] });
+    if (provider === 'openai') return JSON.stringify({ model: 'gpt-4o', max_tokens: 6000, messages: [{ role: 'user', content: prompt }] });
+    return JSON.stringify({ model: 'claude-opus-4-6', max_tokens: 6000, messages: [{ role: 'user', content: prompt }] });
   }
 
   function extractText(data, provider) {
@@ -1049,7 +1070,21 @@ Return ONLY a valid JSON object (no markdown fences, no explanation text, just r
   ]
 }
 
-Provide exactly 5 flight options and 5 hotel options (or fewer if flexible options are needed). If flexible dates/destinations are enabled, include 1-2 options using the alternative dates or nearby airports in the "flexible_date" or "flexible_dest" fields. Make prices realistic for the route and season. Return only raw JSON.`;
+You MUST provide exactly 6 flight options and 6 hotel options — never fewer.
+
+For flights, vary:
+- Departure times: include at least one early morning (05:00–08:00), one midday (10:00–14:00), one afternoon (14:00–18:00), and one evening/red-eye (18:00–23:59)
+- Airlines: use different carriers where possible
+- Price range: include a budget option, 2–3 mid-range options, and a premium option
+- Stops: mix nonstop and 1-stop options
+
+For hotels, vary:
+- Star rating: include 3-star, 4-star, and 5-star options
+- Price range: budget (~$80–120/night), mid-range (~$150–220/night), and luxury ($250+/night)
+- Location: different neighbourhoods or distances from city centre
+
+If flexible dates/destinations are enabled, mark 1–2 options with the alternative date or nearby airport in "flexible_date" or "flexible_dest".
+Make all prices realistic for the route and season. Return only raw JSON.`;
   }
 
   // ─── LOADING ANIMATION ───
@@ -1213,7 +1248,12 @@ Return ONLY a valid JSON object (no markdown fences, no explanation, just raw JS
   ],
   "best_deals": []
 }
-Provide exactly 6 hotel options with realistic prices for ${d.destination}. Return only raw JSON.`;
+You MUST provide exactly 6 hotel options — never fewer. Vary:
+- Star rating: include at least one 3-star, two 4-star, and one 5-star option
+- Price range: budget (~$80–120/night), mid-range (~$150–220/night), and luxury ($250+/night)
+- Location: different neighbourhoods or distances from city centre
+- Brands: use a mix of chains and independent/boutique hotels
+Make all prices realistic for ${d.destination}. Return only raw JSON.`;
 
     try {
       const response = await fetch(API_ENDPOINT, {
@@ -1316,6 +1356,7 @@ Provide exactly 6 hotel options with realistic prices for ${d.destination}. Retu
               <div class="price-total">$${(h.total_price||0).toLocaleString()} total (${nights} nights)</div>
             </div>
           </div>
+          ${hotelBookingLinks(h, d, nights)}
         </div>`;
     });
 
@@ -1405,6 +1446,7 @@ Provide exactly 6 hotel options with realistic prices for ${d.destination}. Retu
           <div class="flight-badges">
             ${(f.highlights||[]).map(h => `<span class="badge ${h.toLowerCase().includes('nonstop')||h.toLowerCase().includes('direct')?'green':h.toLowerCase().includes('bag')?'blue':''}">${h}</span>`).join('')}
           </div>
+          ${flightBookingLinks(f, d)}
         </div>`;
     });
 
@@ -1441,6 +1483,7 @@ Provide exactly 6 hotel options with realistic prices for ${d.destination}. Retu
               <div class="price-total">$${(h.total_price||0).toLocaleString()} total (${nights} nights)</div>
             </div>
           </div>
+          ${hotelBookingLinks(h, d, nights)}
         </div>`;
     });
 
@@ -1477,6 +1520,84 @@ Provide exactly 6 hotel options with realistic prices for ${d.destination}. Retu
     if (a.includes('air france')) return '🇫🇷';
     if (a.includes('emirates')) return '🇦🇪';
     return '✈️';
+  }
+
+  // ─── BOOKING LINK HELPERS ─────────────────────────────────────────────────
+  function airlineUrl(airline) {
+    if (!airline) return '';
+    const a = airline.toLowerCase();
+    if (a.includes('delta'))        return 'https://www.delta.com';
+    if (a.includes('united'))       return 'https://www.united.com';
+    if (a.includes('american'))     return 'https://www.aa.com';
+    if (a.includes('southwest'))    return 'https://www.southwest.com';
+    if (a.includes('jetblue'))      return 'https://www.jetblue.com';
+    if (a.includes('alaska'))       return 'https://www.alaskaair.com';
+    if (a.includes('spirit'))       return 'https://www.spirit.com';
+    if (a.includes('frontier'))     return 'https://www.flyfrontier.com';
+    if (a.includes('british'))      return 'https://www.britishairways.com';
+    if (a.includes('lufthansa'))    return 'https://www.lufthansa.com';
+    if (a.includes('air france'))   return 'https://www.airfrance.com';
+    if (a.includes('emirates'))     return 'https://www.emirates.com';
+    if (a.includes('qatar'))        return 'https://www.qatarairways.com';
+    if (a.includes('singapore'))    return 'https://www.singaporeair.com';
+    if (a.includes('ryanair'))      return 'https://www.ryanair.com';
+    if (a.includes('easyjet'))      return 'https://www.easyjet.com';
+    return '';
+  }
+
+  function brandUrl(brand) {
+    if (!brand) return '';
+    const b = brand.toLowerCase();
+    if (b.includes('ritz'))         return 'https://www.ritzcarlton.com';
+    if (b.includes('four seasons')) return 'https://www.fourseasons.com';
+    if (b.includes('waldorf'))      return 'https://www.waldorfastoria.hilton.com';
+    if (b.includes('marriott'))     return 'https://www.marriott.com';
+    if (b.includes('westin') || b.includes('sheraton') || b.includes('w hotels')) return 'https://www.marriott.com';
+    if (b.includes('hilton'))       return 'https://www.hilton.com';
+    if (b.includes('hampton'))      return 'https://hamptoninn.hilton.com';
+    if (b.includes('hyatt'))        return 'https://www.hyatt.com';
+    if (b.includes('ihg') || b.includes('intercontinental')) return 'https://www.ihg.com';
+    if (b.includes('holiday inn'))  return 'https://www.ihg.com/holidayinn';
+    if (b.includes('kimpton'))      return 'https://www.kimptonhotels.com';
+    if (b.includes('fairmont'))     return 'https://www.fairmont.com';
+    if (b.includes('best western')) return 'https://www.bestwestern.com';
+    if (b.includes('wyndham'))      return 'https://www.wyndhamhotels.com';
+    if (b.includes('radisson'))     return 'https://www.radissonhotels.com';
+    if (b.includes('airbnb'))       return 'https://www.airbnb.com';
+    return '';
+  }
+
+  function flightBookingLinks(f, d) {
+    const from    = extractCode(d.origin);
+    const to      = extractCode(d.destination);
+    const dep     = d.depDate;
+    const ret     = d.retDate;
+    const n       = d.travelers || 1;
+    const kayak   = `https://www.kayak.com/flights/${from}-${to}/${dep}/${ret}/${n}adults`;
+    const gflight = `https://www.google.com/travel/flights?q=Flights+from+${encodeURIComponent(d.origin)}+to+${encodeURIComponent(d.destination)}`;
+    const direct  = airlineUrl(f.airline);
+    return `
+      <div class="booking-links">
+        <a href="${kayak}"   target="_blank" rel="noopener" class="book-btn book-btn-kayak">🔍 Kayak</a>
+        <a href="${gflight}" target="_blank" rel="noopener" class="book-btn book-btn-google">✈️ Google Flights</a>
+        ${direct ? `<a href="${direct}" target="_blank" rel="noopener" class="book-btn book-btn-direct">🌐 ${f.airline}</a>` : ''}
+      </div>`;
+  }
+
+  function hotelBookingLinks(h, d, nights) {
+    const dest     = encodeURIComponent(`${h.name} ${h.location}`);
+    const checkin  = d.depDate  || '';
+    const checkout = d.retDate  || '';
+    const guests   = d.travelers || 2;
+    const booking  = `https://www.booking.com/search.html?ss=${dest}&checkin=${checkin}&checkout=${checkout}&no_rooms=1&group_adults=${guests}`;
+    const kayak    = `https://www.kayak.com/hotels/${encodeURIComponent(d.destination || h.location)}/${checkin}/${checkout}/${guests}adults`;
+    const direct   = brandUrl(h.brand);
+    return `
+      <div class="booking-links">
+        <a href="${booking}" target="_blank" rel="noopener" class="book-btn book-btn-booking">🏨 Booking.com</a>
+        <a href="${kayak}"   target="_blank" rel="noopener" class="book-btn book-btn-kayak">🔍 Kayak Hotels</a>
+        ${direct ? `<a href="${direct}" target="_blank" rel="noopener" class="book-btn book-btn-direct">🌐 ${h.brand}</a>` : ''}
+      </div>`;
   }
 
   function showError(msg) {
