@@ -669,11 +669,16 @@
   <!-- SEARCH CARD -->
   <div class="search-card fade-in">
 
-    <!-- API KEY -->
+    <!-- API KEY + PROVIDER -->
     <div class="api-key-bar">
-      <label>🔑 Claude API Key</label>
+      <label id="apiKeyLabel">🔑 Claude API Key</label>
       <input type="password" id="apiKey" placeholder="sk-ant-api03-..." autocomplete="off" />
-      <span class="api-key-note">Your key is stored locally in your browser and never sent to any server except Anthropic's API. Get a key at <strong>console.anthropic.com</strong></span>
+      <select id="providerSelect" onchange="updateProviderLabel()" style="border:1px solid #bfdbfe;border-radius:6px;padding:7px 10px;font-size:13px;font-family:'Inter',sans-serif;color:var(--blue);font-weight:600;background:white;outline:none;cursor:pointer;flex-shrink:0;">
+        <option value="claude">Claude (Anthropic)</option>
+        <option value="openai">OpenAI (GPT-4o)</option>
+        <option value="gemini">Google Gemini</option>
+      </select>
+      <span class="api-key-note" id="apiKeyNote">Your key is stored locally in your browser and never sent to any server except the AI provider. Get a key at <strong>console.anthropic.com</strong></span>
     </div>
 
     <!-- ORIGIN & DESTINATION -->
@@ -908,9 +913,41 @@
   document.getElementById('depDate').value = dep.toISOString().slice(0,10);
   document.getElementById('retDate').value = ret.toISOString().slice(0,10);
 
-  // ─── LOAD SAVED API KEY ───
-  const savedKey = localStorage.getItem('claude_api_key');
+  // ─── PROVIDER META ───
+  const PROVIDER_META = {
+    claude: { label: '🔑 Claude API Key',  placeholder: 'sk-ant-api03-...', site: 'console.anthropic.com' },
+    openai: { label: '🔑 OpenAI API Key',  placeholder: 'sk-...',            site: 'platform.openai.com'  },
+    gemini: { label: '🔑 Gemini API Key',  placeholder: 'AIza...',           site: 'aistudio.google.com'  },
+  };
+
+  function updateProviderLabel() {
+    const p = document.getElementById('providerSelect').value;
+    const m = PROVIDER_META[p];
+    document.getElementById('apiKeyLabel').textContent = m.label;
+    document.getElementById('apiKey').placeholder = m.placeholder;
+    document.getElementById('apiKeyNote').innerHTML =
+      `Your key is stored locally and never sent anywhere except the AI provider. Get a key at <strong>${m.site}</strong>`;
+    localStorage.setItem('travel_provider', p);
+  }
+
+  function getProvider() { return document.getElementById('providerSelect').value; }
+
+  function buildRequestBody(prompt, provider) {
+    if (provider === 'gemini') return JSON.stringify({ prompt });
+    if (provider === 'openai') return JSON.stringify({ model: 'gpt-4o', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] });
+    return JSON.stringify({ model: 'claude-opus-4-6', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] });
+  }
+
+  function extractText(data, provider) {
+    if (provider === 'openai') return data.choices?.[0]?.message?.content?.trim() || '';
+    return data.content?.[0]?.text?.trim() || '';
+  }
+
+  // ─── LOAD SAVED API KEY + PROVIDER ───
+  const savedKey = localStorage.getItem('travel_api_key') || localStorage.getItem('claude_api_key');
   if (savedKey) document.getElementById('apiKey').value = savedKey;
+  const savedProvider = localStorage.getItem('travel_provider');
+  if (savedProvider) { document.getElementById('providerSelect').value = savedProvider; updateProviderLabel(); }
 
   // ─── TOGGLE HELPERS ───
   function toggleFlexDates() {
@@ -1039,9 +1076,10 @@ Provide exactly 5 flight options and 5 hotel options (or fewer if flexible optio
 
   // ─── MAIN SEARCH ───
   async function searchTravel() {
-    const apiKey = document.getElementById('apiKey').value.trim();
-    if (!apiKey) { showError('Please enter your Claude API key above.'); return; }
-    localStorage.setItem('claude_api_key', apiKey);
+    const apiKey   = document.getElementById('apiKey').value.trim();
+    const provider = getProvider();
+    if (!apiKey) { showError('Please enter your API key above.'); return; }
+    localStorage.setItem('travel_api_key', apiKey);
 
     const d = getFormData();
     if (!d.origin) { showError('Please enter your departure city or airport.'); return; }
@@ -1060,19 +1098,16 @@ Provide exactly 5 flight options and 5 hotel options (or fewer if flexible optio
 
     try {
       const headers = {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
+        'Content-Type':      'application/json',
+        'x-api-key':         apiKey,
+        'x-provider':        provider,
+        'anthropic-version': '2023-06-01',
       };
 
       const response = await fetch(API_ENDPOINT, {
         method: 'POST',
         headers,
-        body: JSON.stringify({
-          model: 'claude-opus-4-6',
-          max_tokens: 4096,
-          messages: [{ role: 'user', content: prompt }]
-        })
+        body: buildRequestBody(prompt, provider),
       });
 
       if (!response.ok) {
@@ -1081,7 +1116,7 @@ Provide exactly 5 flight options and 5 hotel options (or fewer if flexible optio
       }
 
       const data = await response.json();
-      const text = data.content[0].text.trim();
+      const text = extractText(data, provider);
 
       // Parse JSON (handle possible markdown fences)
       let json;
@@ -1121,9 +1156,10 @@ Provide exactly 5 flight options and 5 hotel options (or fewer if flexible optio
 
   // ─── HOTEL-ONLY SEARCH ───
   async function searchHotelsOnly() {
-    const apiKey = document.getElementById('apiKey').value.trim();
-    if (!apiKey) { showError('Please enter your Claude API key above.'); return; }
-    localStorage.setItem('claude_api_key', apiKey);
+    const apiKey   = document.getElementById('apiKey').value.trim();
+    const provider = getProvider();
+    if (!apiKey) { showError('Please enter your API key above.'); return; }
+    localStorage.setItem('travel_api_key', apiKey);
 
     const d = getFormData();
     if (!d.destination) { showError('Please enter your destination city or airport.'); return; }
@@ -1183,15 +1219,12 @@ Provide exactly 6 hotel options with realistic prices for ${d.destination}. Retu
       const response = await fetch(API_ENDPOINT, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01'
+          'Content-Type':      'application/json',
+          'x-api-key':         apiKey,
+          'x-provider':        provider,
+          'anthropic-version': '2023-06-01',
         },
-        body: JSON.stringify({
-          model: 'claude-opus-4-6',
-          max_tokens: 3000,
-          messages: [{ role: 'user', content: prompt }]
-        })
+        body: buildRequestBody(prompt, provider),
       });
 
       if (!response.ok) {
@@ -1200,7 +1233,7 @@ Provide exactly 6 hotel options with realistic prices for ${d.destination}. Retu
       }
 
       const data = await response.json();
-      const text = data.content[0].text.trim();
+      const text = extractText(data, provider);
       let json;
       try {
         const clean = text.replace(/^```json?\s*/i,'').replace(/\s*```$/,'').trim();
