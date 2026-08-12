@@ -42,7 +42,7 @@ module.exports = async function handler(req, res) {
       const prompt = req.body.prompt || '';
       const geminiBody = {
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens: 4096 },
+        generationConfig: { maxOutputTokens: 8192 },
       };
 
       // Try each model in order — skip deprecated ones automatically

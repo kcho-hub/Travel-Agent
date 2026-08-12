@@ -974,10 +974,15 @@
     // 3. Extract the first { ... } block (handles preamble/trailing text)
     const objMatch = text.match(/\{[\s\S]*\}/);
     if (objMatch) { try { return JSON.parse(objMatch[0]); } catch(_) {} }
-    // 4. Nothing worked — surface the raw snippet for debugging
-    const preview = text.length > 200 ? text.slice(0, 200) + '…' : text;
+    // 4. Diagnose and surface a helpful error
+    const isTruncated = !text.trimEnd().endsWith('}');
     console.error('Unparseable AI response:', text);
-    throw new Error(`Could not parse AI response. Raw preview: ${preview}`);
+    if (isTruncated) {
+      throw new Error('The AI response was cut off before it finished. Try again — if it keeps happening, switch to Claude which supports longer outputs.');
+    }
+    const start = text.slice(0, 120);
+    const end   = text.slice(-80);
+    throw new Error(`Could not parse AI response.\nStart: ${start}\n…End: ${end}`);
   }
 
   // ─── LOAD SAVED API KEY + PROVIDER ───
