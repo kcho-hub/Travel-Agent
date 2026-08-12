@@ -694,6 +694,14 @@
       gap: 16px;
       flex-wrap: wrap;
     }
+    .hotel-image {
+      width: 140px;
+      height: 140px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--gray-100);
+    }
     .hotel-info { flex: 1; min-width: 200px; }
     .hotel-name { font-size: 16px; font-weight: 700; color: var(--gray-800); }
     .hotel-brand { font-size: 12px; color: var(--blue); font-weight: 600; margin-top: 1px; }
@@ -1295,9 +1303,10 @@ Return ONLY valid raw JSON (no markdown, no explanation) using this exact struct
       "amenities": ["Free WiFi", "Pool"],
       "rating": 4.5,
       "highlights": ["Great location"],
+      "image_url": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400&h=300&fit=crop",
       "flexible_dest": ""
     }
-  ],
+  ]
   "best_deals": [
     {
       "outbound_index": 0,
@@ -1314,12 +1323,12 @@ Return ONLY valid raw JSON (no markdown, no explanation) using this exact struct
 }
 
 REQUIREMENTS — never fewer than specified:
-- outbound_flights: exactly 6 options from ${d.origin} to ${d.destination} on ${d.depDate}
-- return_flights: exactly 6 options from ${d.destination} back to ${d.origin} on ${d.retDate}
-- hotels: exactly 6 options
+- outbound_flights: exactly 8 options from ${d.origin} to ${d.destination} on ${d.depDate}
+- return_flights: exactly 8 options from ${d.destination} back to ${d.origin} on ${d.retDate}
+- hotels: exactly 8 options
 
 For outbound AND return flights, vary departure times across morning (05:00–09:00), midday (10:00–14:00), afternoon (14:00–18:00), and evening (18:00–23:59). Use different airlines. Mix nonstop and 1-stop. Include a budget, mid-range, and premium option.
-For hotels: mix 3★, 4★, 5★; budget/mid/luxury pricing; different neighbourhoods.
+For hotels: mix 3★, 4★, 5★; budget/mid/luxury pricing; different neighbourhoods. Include image_url for each hotel with realistic Unsplash URLs of luxury hotel rooms/lobbies (format: https://images.unsplash.com/photo-XXXXXXXXX?w=400&h=300&fit=crop).
 If flexible dates/destinations enabled, mark 1–2 options in flexible_date or flexible_dest.
 Make all prices realistic for the route and season. Return only raw JSON.`;
   }
@@ -1747,6 +1756,7 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
         <div class="option-card ${isFirst ? 'best-value' : ''} fade-in" style="animation-delay:${0.1+i*0.08}s">
           ${isFirst ? '<div class="best-tag">Best Value</div>' : ''}
           <div class="hotel-card-body">
+            ${h.image_url ? `<img src="${h.image_url}" alt="${h.name}" class="hotel-image" onerror="this.style.display='none'" />` : ''}
             <div class="hotel-info">
               <div class="hotel-name">${h.name}</div>
               <div class="hotel-brand">${h.brand}</div>
@@ -1898,6 +1908,7 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
       document.getElementById('hotelsList').innerHTML += `
         <div class="option-card fade-in" style="animation-delay:${0.1+i*0.08}s">
           <div class="hotel-card-body">
+            ${h.image_url ? `<img src="${h.image_url}" alt="${h.name}" class="hotel-image" onerror="this.style.display='none'" />` : ''}
             <div class="hotel-info">
               <div class="hotel-name">${h.name}</div>
               <div class="hotel-brand">${h.brand}</div>
@@ -2057,7 +2068,7 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
     const prompt = `Return ONLY a valid JSON object, no markdown, no explanation:
 {"outbound_flights":[]}
 
-Provide 3 more one-way flight options from ${from} to ${to} on ${date} for ${_selD.travelers} traveler(s) in ${_selD.cabin} class.
+Provide 6 more one-way flight options from ${from} to ${to} on ${date} for ${_selD.travelers} traveler(s) in ${_selD.cabin} class.
 Do NOT repeat any of these already-shown flights:
 ${skip}
 
@@ -2107,10 +2118,11 @@ Vary prices and departure times.`;
     const prompt = `Return ONLY a valid JSON object, no markdown, no explanation:
 {"hotels":[]}
 
-Provide 3 more hotel options in ${_selD.destination} for ${_selD.travelers} guests, check-in ${_selD.depDate}, check-out ${_selD.retDate} (${_selNights} nights).
+Provide 8 more hotel options in ${_selD.destination} for ${_selD.travelers} guests, check-in ${_selD.depDate}, check-out ${_selD.retDate} (${_selNights} nights).
 Do NOT include these already-shown hotels: ${skip}
 
-Schema for each item: {"name":"","brand":"","stars":0,"rating":"","location":"","distance_from_center":"","amenities":[],"highlights":[],"price_per_night":0,"total_price":0}
+Schema for each item: {"name":"","brand":"","stars":0,"rating":"","location":"","distance_from_center":"","amenities":[],"highlights":[],"price_per_night":0,"total_price":0,"image_url":""}
+For each hotel, provide a realistic Unsplash image URL of a luxury hotel room or lobby (e.g., https://images.unsplash.com/photo-XXXXXXXXX?w=400&h=300&fit=crop).
 Vary price ranges and neighbourhoods.`;
 
     try {
@@ -2134,6 +2146,7 @@ Vary price ranges and neighbourhoods.`;
         list.innerHTML += `
           <div class="option-card fade-in">
             <div class="hotel-card-body">
+              ${h.image_url ? `<img src="${h.image_url}" alt="${h.name}" class="hotel-image" onerror="this.style.display='none'" />` : ''}
               <div class="hotel-info">
                 <div class="hotel-name">${h.name}</div>
                 <div class="hotel-brand">${h.brand}</div>
