@@ -1689,7 +1689,7 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
           <div class="flight-badges">
             ${(f.highlights||[]).map(h=>`<span class="badge ${h.toLowerCase().includes('nonstop')||h.toLowerCase().includes('direct')?'green':h.toLowerCase().includes('bag')?'blue':''}">${h}</span>`).join('')}
           </div>
-          ${flightBookingLinks(f, d)}
+          ${flightBookingLinks(f, d, selType)}
         </div>`;
     }
 
@@ -1818,14 +1818,14 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
     return '';
   }
 
-  function flightBookingLinks(f, d) {
-    const from    = extractCode(d.origin);
-    const to      = extractCode(d.destination);
-    const dep     = d.depDate;
-    const ret     = d.retDate;
-    const n       = d.travelers || 1;
-    const kayak   = `https://www.kayak.com/flights/${from}-${to}/${dep}/${ret}/${n}adults`;
-    const gflight = `https://www.google.com/travel/flights?q=Flights+from+${encodeURIComponent(d.origin)}+to+${encodeURIComponent(d.destination)}`;
+  function flightBookingLinks(f, d, direction) {
+    const isReturn = direction === 'ret';
+    const from  = isReturn ? extractCode(d.destination) : extractCode(d.origin);
+    const to    = isReturn ? extractCode(d.origin)      : extractCode(d.destination);
+    const date  = isReturn ? d.retDate : d.depDate;
+    const n     = d.travelers || 1;
+    const kayak   = `https://www.kayak.com/flights/${from}-${to}/${date}/${n}adults`;
+    const gflight = `https://www.google.com/travel/flights?q=Flights+from+${encodeURIComponent(from)}+to+${encodeURIComponent(to)}+on+${date}&hl=en`;
     const direct  = airlineUrl(f.airline);
     return `
       <div class="booking-links">
@@ -1840,7 +1840,7 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
     const checkin  = d.depDate  || '';
     const checkout = d.retDate  || '';
     const guests   = d.travelers || 2;
-    const booking  = `https://www.booking.com/search.html?ss=${dest}&checkin=${checkin}&checkout=${checkout}&no_rooms=1&group_adults=${guests}`;
+    const booking  = `https://www.booking.com/searchresults.html?ss=${dest}&checkin=${checkin}&checkout=${checkout}&no_rooms=1&group_adults=${guests}&nflt=&lang=en-us`;
     const kayak    = `https://www.kayak.com/hotels/${encodeURIComponent(d.destination || h.location)}/${checkin}/${checkout}/${guests}adults`;
     const direct   = brandUrl(h.brand);
     return `
