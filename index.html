@@ -314,6 +314,107 @@
     .book-btn-booking { background: #003580; color: #fff; }
     .book-btn-direct  { background: var(--green); color: #fff; }
 
+    /* ─── CARD SELECTION ─── */
+    .option-card.selected {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px var(--blue), var(--shadow-md);
+      background: linear-gradient(to right, var(--blue-light), white 60%);
+    }
+    .select-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      border: 1.5px solid var(--blue);
+      background: white;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all .15s;
+      margin-top: 8px;
+    }
+    .select-pill:hover  { background: var(--blue-light); }
+    .select-pill.active { background: var(--blue); color: white; }
+
+    /* ─── TRIP SUMMARY ─── */
+    .trip-summary {
+      display: none;
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      padding: 24px 28px;
+      margin-bottom: 20px;
+      border: 2px solid var(--blue);
+    }
+    .trip-summary.visible { display: block; animation: fadeInUp .3s ease both; }
+    .trip-summary-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--gray-900);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .summary-slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .summary-slot {
+      border: 1.5px dashed var(--gray-300);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      background: var(--gray-50);
+      min-height: 78px;
+    }
+    .summary-slot.filled { border-style: solid; border-color: var(--blue); background: var(--blue-light); }
+    .summary-slot-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--gray-400); margin-bottom: 5px; }
+    .summary-slot.filled .summary-slot-label { color: var(--blue); }
+    .summary-slot-name   { font-size: 13px; font-weight: 700; color: var(--gray-800); }
+    .summary-slot-detail { font-size: 11px; color: var(--gray-500); margin-top: 2px; line-height: 1.4; }
+    .summary-slot-price  { font-size: 13px; font-weight: 700; color: var(--blue); margin-top: 4px; }
+    .summary-slot-empty  { font-size: 12px; color: var(--gray-400); font-style: italic; padding-top: 16px; text-align: center; }
+    .summary-total-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      background: var(--gray-50);
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+    }
+    .summary-total-label  { font-size: 13px; font-weight: 600; color: var(--gray-600); }
+    .summary-total-amount { font-size: 1.5rem; font-weight: 800; color: var(--gray-900); }
+    .summary-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .summary-clear-btn {
+      padding: 8px 16px;
+      background: none;
+      border: 1.5px solid var(--gray-300);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--gray-500);
+      font-family: 'Inter', sans-serif;
+      transition: all .15s;
+    }
+    .summary-clear-btn:hover { border-color: var(--gray-500); color: var(--gray-700); }
+    .deal-select-btn {
+      width: 100%;
+      margin-top: 14px;
+      padding: 9px;
+      background: rgba(255,255,255,.18);
+      border: 1.5px solid rgba(255,255,255,.4);
+      border-radius: 6px;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .deal-select-btn:hover { background: rgba(255,255,255,.3); }
+
     /* ─── LOADING ─── */
     .loading {
       display: none;
@@ -874,10 +975,30 @@
       <div class="deals-grid" id="dealsList"></div>
     </div>
 
-    <!-- Flights -->
-    <div class="results-section">
-      <div class="results-section-title">✈️ Flight Options <span id="flightCount"></span></div>
-      <div class="options-list" id="flightsList"></div>
+    <!-- Trip Summary -->
+    <div class="trip-summary" id="tripSummary">
+      <div class="trip-summary-title">
+        🧳 Your Trip Selection
+        <button class="summary-clear-btn" onclick="clearTripSelection()">✕ Clear</button>
+      </div>
+      <div class="summary-slots" id="summarySlotsEl"></div>
+      <div class="summary-total-bar">
+        <span class="summary-total-label">Estimated Total (all travelers)</span>
+        <span class="summary-total-amount" id="summaryTotal">$0</span>
+      </div>
+      <div class="summary-actions" id="summaryActions"></div>
+    </div>
+
+    <!-- Outbound Flights -->
+    <div class="results-section" id="outboundSection">
+      <div class="results-section-title">🛫 Outbound Flights <span id="outboundCount"></span></div>
+      <div class="options-list" id="outboundList"></div>
+    </div>
+
+    <!-- Return Flights -->
+    <div class="results-section" id="returnSection">
+      <div class="results-section-title">🛬 Return Flights <span id="returnCount"></span></div>
+      <div class="options-list" id="returnList"></div>
     </div>
 
     <!-- Hotels -->
@@ -1033,7 +1154,7 @@ Search parameters:
 - Origin: ${d.origin}
 - Destination: ${d.destination}
 - Departure: ${d.depDate}
-- Return: ${d.retDate} (${nights} nights)
+- Return date: ${d.retDate} (${nights} nights)
 - Travelers: ${d.travelers}
 - Cabin: ${d.cabin}
 - Flexible dates: ${d.flexDates ? `Yes, ±${d.flexDaysRange} days` : 'No'}
@@ -1042,69 +1163,82 @@ Search parameters:
 - Budget: ${budgetStr} total
 - Hotel stars: ${d.stars === 'any' ? 'Any' : d.stars + '+'}
 
-Return ONLY a valid JSON object (no markdown fences, no explanation text, just raw JSON) using this exact structure:
+Return ONLY valid raw JSON (no markdown, no explanation) using this exact structure:
 
 {
-  "summary": "One sentence overview of the trip options",
-  "flights": [
+  "summary": "One sentence overview",
+  "outbound_flights": [
     {
-      "airline": "Delta Air Lines",
-      "flight_number": "DL 421",
-      "departure_time": "08:15",
-      "arrival_time": "11:45",
-      "duration": "3h 30m",
+      "airline": "Korean Air",
+      "flight_number": "KE 601",
+      "departure_time": "08:30",
+      "arrival_time": "11:05",
+      "duration": "2h 35m",
       "stops": 0,
       "stop_city": "",
       "price_per_person": 285,
       "total_price": 570,
       "cabin_class": "Economy",
-      "highlights": ["Nonstop", "Free checked bag", "Extra legroom available"],
+      "highlights": ["Nonstop", "Meal included"],
+      "flexible_date": "",
+      "flexible_dest": ""
+    }
+  ],
+  "return_flights": [
+    {
+      "airline": "Asiana Airlines",
+      "flight_number": "OZ 102",
+      "departure_time": "14:00",
+      "arrival_time": "16:40",
+      "duration": "2h 40m",
+      "stops": 0,
+      "stop_city": "",
+      "price_per_person": 310,
+      "total_price": 620,
+      "cabin_class": "Economy",
+      "highlights": ["Nonstop", "USB charging"],
       "flexible_date": "",
       "flexible_dest": ""
     }
   ],
   "hotels": [
     {
-      "name": "The Ritz-Carlton Coconut Grove",
-      "brand": "Ritz-Carlton",
-      "stars": 5,
-      "location": "Coconut Grove, Miami",
-      "distance_from_center": "3.2 miles from downtown",
-      "price_per_night": 420,
-      "total_price": 2940,
-      "amenities": ["Pool", "Spa", "Free WiFi", "Gym", "Restaurant", "Valet"],
-      "rating": 4.8,
-      "highlights": ["Bayfront views", "Award-winning spa", "Michelin-starred restaurant"],
+      "name": "Hotel Example",
+      "brand": "Marriott",
+      "stars": 4,
+      "location": "City Centre",
+      "distance_from_center": "0.3 miles",
+      "price_per_night": 150,
+      "total_price": 1050,
+      "amenities": ["Free WiFi", "Pool"],
+      "rating": 4.5,
+      "highlights": ["Great location"],
       "flexible_dest": ""
     }
   ],
   "best_deals": [
     {
-      "flight_index": 0,
+      "outbound_index": 0,
+      "return_index": 0,
       "hotel_index": 0,
-      "total_trip_cost": 3510,
-      "flight_cost": 570,
-      "hotel_cost": 2940,
-      "savings_vs_typical": "18%",
-      "reason": "Best combination of price and quality for business travelers"
+      "total_trip_cost": 2240,
+      "outbound_cost": 570,
+      "return_cost": 620,
+      "hotel_cost": 1050,
+      "savings_vs_typical": "15%",
+      "reason": "Best value combination"
     }
   ]
 }
 
-You MUST provide exactly 6 flight options and 6 hotel options — never fewer.
+REQUIREMENTS — never fewer than specified:
+- outbound_flights: exactly 6 options from ${d.origin} to ${d.destination} on ${d.depDate}
+- return_flights: exactly 6 options from ${d.destination} back to ${d.origin} on ${d.retDate}
+- hotels: exactly 6 options
 
-For flights, vary:
-- Departure times: include at least one early morning (05:00–08:00), one midday (10:00–14:00), one afternoon (14:00–18:00), and one evening/red-eye (18:00–23:59)
-- Airlines: use different carriers where possible
-- Price range: include a budget option, 2–3 mid-range options, and a premium option
-- Stops: mix nonstop and 1-stop options
-
-For hotels, vary:
-- Star rating: include 3-star, 4-star, and 5-star options
-- Price range: budget (~$80–120/night), mid-range (~$150–220/night), and luxury ($250+/night)
-- Location: different neighbourhoods or distances from city centre
-
-If flexible dates/destinations are enabled, mark 1–2 options with the alternative date or nearby airport in "flexible_date" or "flexible_dest".
+For outbound AND return flights, vary departure times across morning (05:00–09:00), midday (10:00–14:00), afternoon (14:00–18:00), and evening (18:00–23:59). Use different airlines. Mix nonstop and 1-stop. Include a budget, mid-range, and premium option.
+For hotels: mix 3★, 4★, 5★; budget/mid/luxury pricing; different neighbourhoods.
+If flexible dates/destinations enabled, mark 1–2 options in flexible_date or flexible_dest.
 Make all prices realistic for the route and season. Return only raw JSON.`;
   }
 
@@ -1327,6 +1461,91 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
     }
   }
 
+  // ─── TRIP SELECTION STATE ─────────────────────────────────────────────────
+  let tripSel = { outbound: null, ret: null, hotel: null };
+  let _selData = null, _selD = null, _selNights = 0;
+
+  function selectCard(type, index) {
+    if (type === 'outbound') tripSel.outbound = tripSel.outbound === index ? null : index;
+    else if (type === 'ret')  tripSel.ret    = tripSel.ret    === index ? null : index;
+    else if (type === 'hotel') tripSel.hotel = tripSel.hotel  === index ? null : index;
+    _refreshSelection();
+  }
+
+  function applyBestDeal(deal) {
+    tripSel.outbound = deal.outbound_index ?? deal.flight_index ?? 0;
+    tripSel.ret      = deal.return_index   ?? 0;
+    tripSel.hotel    = deal.hotel_index    ?? 0;
+    _refreshSelection();
+    document.getElementById('tripSummary').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function clearTripSelection() {
+    tripSel = { outbound: null, ret: null, hotel: null };
+    _refreshSelection();
+  }
+
+  function _refreshSelection() {
+    // Update card borders + pill buttons
+    ['outbound', 'ret', 'hotel'].forEach(type => {
+      const sel = tripSel[type];
+      document.querySelectorAll(`[data-sel-type="${type}"]`).forEach(pill => {
+        const idx = parseInt(pill.dataset.selIdx);
+        const card = pill.closest('.option-card');
+        const active = idx === sel;
+        pill.classList.toggle('active', active);
+        pill.textContent = active ? '✓ Selected' : 'Select';
+        if (card) card.classList.toggle('selected', active);
+      });
+    });
+    _updateSummaryPanel();
+  }
+
+  function _updateSummaryPanel() {
+    if (!_selData) return;
+    const ob  = _selData.outbound_flights?.[ tripSel.outbound ] ?? null;
+    const ret = _selData.return_flights?.[   tripSel.ret      ] ?? null;
+    const htl = _selData.hotels?.[           tripSel.hotel    ] ?? null;
+    const panel = document.getElementById('tripSummary');
+    panel.classList.toggle('visible', !!(ob || ret || htl));
+
+    // Build slots
+    const slots = [
+      { label: '🛫 Outbound Flight', item: ob,
+        name:   ob  ? `${ob.airline} ${ob.flight_number}`    : null,
+        detail: ob  ? `${ob.departure_time}→${ob.arrival_time} · ${ob.duration} · ${ob.stops === 0 ? 'Nonstop' : ob.stops+' stop'}` : null,
+        price:  ob  ? `$${ob.total_price.toLocaleString()} (${_selD.travelers} pax)` : null },
+      { label: '🛬 Return Flight', item: ret,
+        name:   ret ? `${ret.airline} ${ret.flight_number}`  : null,
+        detail: ret ? `${ret.departure_time}→${ret.arrival_time} · ${ret.duration} · ${ret.stops === 0 ? 'Nonstop' : ret.stops+' stop'}` : null,
+        price:  ret ? `$${ret.total_price.toLocaleString()} (${_selD.travelers} pax)` : null },
+      { label: '🏨 Hotel', item: htl,
+        name:   htl ? htl.name                               : null,
+        detail: htl ? `${htl.location} · $${htl.price_per_night}/night · ${_selNights} nights` : null,
+        price:  htl ? `$${htl.total_price.toLocaleString()} total`   : null },
+    ];
+
+    document.getElementById('summarySlotsEl').innerHTML = slots.map(s => `
+      <div class="summary-slot ${s.item ? 'filled' : ''}">
+        <div class="summary-slot-label">${s.label}</div>
+        ${s.item
+          ? `<div class="summary-slot-name">${s.name}</div>
+             <div class="summary-slot-detail">${s.detail}</div>
+             <div class="summary-slot-price">${s.price}</div>`
+          : `<div class="summary-slot-empty">Not selected</div>`}
+      </div>`).join('');
+
+    const total = (ob?.total_price || 0) + (ret?.total_price || 0) + (htl?.total_price || 0);
+    document.getElementById('summaryTotal').textContent = total ? `$${total.toLocaleString()}` : '—';
+
+    // Booking action buttons for selected items
+    const actions = [];
+    if (ob)  actions.push(`<a href="${flightBookingLinks(ob,  _selD).match(/href="([^"]+)"/)?.[1] || '#'}" target="_blank" rel="noopener" class="book-btn book-btn-kayak" style="font-size:13px;padding:9px 16px">🔍 Book Outbound</a>`);
+    if (ret) actions.push(`<a href="${flightBookingLinks(ret, _selD).match(/href="([^"]+)"/)?.[1] || '#'}" target="_blank" rel="noopener" class="book-btn book-btn-google" style="font-size:13px;padding:9px 16px">✈️ Book Return</a>`);
+    if (htl) actions.push(`<a href="${hotelBookingLinks(htl,  _selD, _selNights).match(/href="([^"]+)"/)?.[1] || '#'}" target="_blank" rel="noopener" class="book-btn book-btn-booking" style="font-size:13px;padding:9px 16px">🏨 Book Hotel</a>`);
+    document.getElementById('summaryActions').innerHTML = actions.join('');
+  }
+
   function renderHotelsOnly(data, d, nights) {
     document.getElementById('resultTitle').textContent = `Hotels in ${d.destination}`;
     document.getElementById('resultSubtitle').textContent =
@@ -1380,100 +1599,120 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
 
   // ─── RENDER RESULTS ───
   function renderResults(data, d) {
-    // Restore sections that hotel-only search may have hidden
+    // Restore sections that hotel-only may have hidden
     document.getElementById('dealsSection').style.display = '';
-    const flightsSection = document.querySelector('#results .results-section:nth-child(2)');
-    if (flightsSection) flightsSection.style.display = '';
+    document.getElementById('outboundSection').style.display = '';
+    document.getElementById('returnSection').style.display = '';
+    document.getElementById('tripSummary').classList.remove('visible');
+
+    // Reset selection state for new search
+    tripSel = { outbound: null, ret: null, hotel: null };
+    _selData = data; _selD = d;
     const nights = Math.round((new Date(d.retDate) - new Date(d.depDate)) / 86400000);
+    _selNights = nights;
     const travelers = parseInt(d.travelers);
+
+    const outboundFlights = data.outbound_flights || data.flights || [];
+    const returnFlights   = data.return_flights   || [];
 
     document.getElementById('resultTitle').textContent = `${d.origin} → ${d.destination}`;
     document.getElementById('resultSubtitle').textContent =
       `${formatDate(d.depDate)} – ${formatDate(d.retDate)} · ${nights} nights · ${travelers} traveler${travelers>1?'s':''} · ${d.cabin}`;
     document.getElementById('resultCount').textContent =
-      `${(data.flights||[]).length} flights + ${(data.hotels||[]).length} hotels found`;
+      `${outboundFlights.length} outbound · ${returnFlights.length} return · ${(data.hotels||[]).length} hotels`;
 
-    // Best deals
+    // ── Best Deals ──
     const dealsList = document.getElementById('dealsList');
     dealsList.innerHTML = '';
     (data.best_deals || []).forEach((deal, i) => {
-      const flight = (data.flights || [])[deal.flight_index] || {};
-      const hotel = (data.hotels || [])[deal.hotel_index] || {};
+      const ob  = outboundFlights[ deal.outbound_index ?? deal.flight_index ?? 0 ] || {};
+      const ret = returnFlights[   deal.return_index   ?? 0 ]                      || {};
+      const htl = (data.hotels||[])[ deal.hotel_index ?? 0 ]                       || {};
+      const obCost  = deal.outbound_cost || ob.total_price  || 0;
+      const retCost = deal.return_cost   || ret.total_price || 0;
+      const htlCost = deal.hotel_cost    || htl.total_price || 0;
+      const total   = deal.total_trip_cost || (obCost + retCost + htlCost);
       dealsList.innerHTML += `
         <div class="deal-card fade-in" style="animation-delay:${i*0.1}s">
           <div class="deal-header">
             <div class="deal-label">Best Deal #${i+1}</div>
             ${deal.savings_vs_typical ? `<div class="deal-savings">Save ${deal.savings_vs_typical}</div>` : ''}
           </div>
-          <div class="deal-total"><span class="deal-currency">$</span>${(deal.total_trip_cost||0).toLocaleString()}</div>
+          <div class="deal-total"><span class="deal-currency">$</span>${total.toLocaleString()}</div>
           <div class="deal-total-label">Total for all travelers</div>
           <div class="deal-breakdown">
-            <div class="deal-row"><span>✈️ Flights</span><span>$${(deal.flight_cost||flight.total_price||0).toLocaleString()}</span></div>
-            <div class="deal-row"><span>🏨 Hotel (${nights} nights)</span><span>$${(deal.hotel_cost||hotel.total_price||0).toLocaleString()}</span></div>
+            <div class="deal-row"><span>🛫 Outbound</span><span>$${obCost.toLocaleString()}</span></div>
+            <div class="deal-row"><span>🛬 Return</span><span>$${retCost.toLocaleString()}</span></div>
+            <div class="deal-row"><span>🏨 Hotel (${nights}n)</span><span>$${htlCost.toLocaleString()}</span></div>
           </div>
           ${deal.reason ? `<div class="deal-reason">💡 ${deal.reason}</div>` : ''}
-          <div class="deal-flight">✈️ ${flight.airline || ''} ${flight.flight_number || ''}</div>
-          <div class="deal-hotel">🏨 ${hotel.name || ''}</div>
+          <div class="deal-flight">🛫 ${ob.airline || ''} ${ob.flight_number || ''}</div>
+          <div class="deal-flight">🛬 ${ret.airline || ''} ${ret.flight_number || ''}</div>
+          <div class="deal-hotel">🏨 ${htl.name || ''}</div>
+          <button class="deal-select-btn" onclick="applyBestDeal(${JSON.stringify(deal).replace(/"/g,'&quot;')})">
+            ✓ Select This Deal
+          </button>
         </div>`;
     });
 
-    // Flights
-    document.getElementById('flightCount').textContent = (data.flights||[]).length;
-    const flightsList = document.getElementById('flightsList');
-    flightsList.innerHTML = '';
-    (data.flights || []).forEach((f, i) => {
-      const isFirst = i === 0;
-      flightsList.innerHTML += `
-        <div class="option-card ${isFirst ? 'best-value' : ''} fade-in" style="animation-delay:${0.1+i*0.08}s">
-          ${isFirst ? '<div class="best-tag">Best Value</div>' : ''}
+    // ── Helper: render a flight card ──
+    function flightCard(f, i, selType, fromCode, toCode) {
+      return `
+        <div class="option-card fade-in" style="animation-delay:${0.1+i*0.08}s">
           <div class="flight-card-body">
             <div class="flight-airline">
               <div class="airline-logo">${airlineEmoji(f.airline)}</div>
               <div>
                 <div class="airline-name">${f.airline}</div>
                 <div class="airline-flight">${f.flight_number} · ${f.cabin_class}</div>
-                ${f.flexible_date ? `<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:2px">📅 Alt date: ${f.flexible_date}</div>` : ''}
+                ${f.flexible_date ? `<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:2px">📅 ${f.flexible_date}</div>` : ''}
                 ${f.flexible_dest ? `<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:2px">📍 ${f.flexible_dest}</div>` : ''}
               </div>
             </div>
             <div class="flight-route">
-              <div class="route-time">
-                <div class="time">${f.departure_time}</div>
-                <div class="airport">${extractCode(d.origin)}</div>
-              </div>
+              <div class="route-time"><div class="time">${f.departure_time}</div><div class="airport">${fromCode}</div></div>
               <div class="route-line">
                 <div class="route-duration">${f.duration}</div>
                 <div class="route-line-bar"></div>
                 <div class="route-stops ${f.stops===0?'nonstop':''}">${f.stops===0?'Nonstop':f.stops+' stop'+(f.stops>1?'s':'')+(f.stop_city?' · '+f.stop_city:'')}</div>
               </div>
-              <div class="route-time">
-                <div class="time">${f.arrival_time}</div>
-                <div class="airport">${extractCode(d.destination)}</div>
-              </div>
+              <div class="route-time"><div class="time">${f.arrival_time}</div><div class="airport">${toCode}</div></div>
             </div>
             <div class="flight-price">
               <div class="price-amount">$${(f.price_per_person||0).toLocaleString()}</div>
               <div class="price-per">per person</div>
               <div class="price-total">$${(f.total_price||0).toLocaleString()} total</div>
+              <button class="select-pill" data-sel-type="${selType}" data-sel-idx="${i}"
+                onclick="selectCard('${selType}', ${i})">Select</button>
             </div>
           </div>
           <div class="flight-badges">
-            ${(f.highlights||[]).map(h => `<span class="badge ${h.toLowerCase().includes('nonstop')||h.toLowerCase().includes('direct')?'green':h.toLowerCase().includes('bag')?'blue':''}">${h}</span>`).join('')}
+            ${(f.highlights||[]).map(h=>`<span class="badge ${h.toLowerCase().includes('nonstop')||h.toLowerCase().includes('direct')?'green':h.toLowerCase().includes('bag')?'blue':''}">${h}</span>`).join('')}
           </div>
           ${flightBookingLinks(f, d)}
         </div>`;
-    });
+    }
 
-    // Hotels
+    // ── Outbound Flights ──
+    const fromCode = extractCode(d.origin);
+    const toCode   = extractCode(d.destination);
+    document.getElementById('outboundCount').textContent = outboundFlights.length;
+    document.getElementById('outboundList').innerHTML = outboundFlights.map((f, i) =>
+      flightCard(f, i, 'outbound', fromCode, toCode)).join('');
+
+    // ── Return Flights ──
+    document.getElementById('returnSection').style.display = returnFlights.length ? '' : 'none';
+    document.getElementById('returnCount').textContent = returnFlights.length;
+    document.getElementById('returnList').innerHTML = returnFlights.map((f, i) =>
+      flightCard(f, i, 'ret', toCode, fromCode)).join('');
+
+    // ── Hotels ──
     document.getElementById('hotelCount').textContent = (data.hotels||[]).length;
-    const hotelsList = document.getElementById('hotelsList');
-    hotelsList.innerHTML = '';
+    document.getElementById('hotelsList').innerHTML = '';
     (data.hotels || []).forEach((h, i) => {
-      const isFirst = i === 0;
       const stars = '★'.repeat(Math.min(5, h.stars||4)) + '☆'.repeat(Math.max(0, 5-(h.stars||4)));
-      hotelsList.innerHTML += `
-        <div class="option-card ${isFirst ? 'best-value' : ''} fade-in" style="animation-delay:${0.1+i*0.08}s">
-          ${isFirst ? '<div class="best-tag">Best Value</div>' : ''}
+      document.getElementById('hotelsList').innerHTML += `
+        <div class="option-card fade-in" style="animation-delay:${0.1+i*0.08}s">
           <div class="hotel-card-body">
             <div class="hotel-info">
               <div class="hotel-name">${h.name}</div>
@@ -1481,20 +1720,18 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
               <div class="hotel-meta">
                 <div class="stars">${stars}</div>
                 <div class="rating">${h.rating}</div>
-                <div class="hotel-location">📍 ${h.location}${h.distance_from_center ? ' · '+h.distance_from_center : ''}</div>
+                <div class="hotel-location">📍 ${h.location}${h.distance_from_center?' · '+h.distance_from_center:''}</div>
               </div>
-              ${h.flexible_dest ? `<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:4px">📍 Nearby: ${h.flexible_dest}</div>` : ''}
-              <div class="hotel-amenities">
-                ${(h.amenities||[]).map(a => `<span class="amenity">${a}</span>`).join('')}
-              </div>
-              <div class="flight-badges" style="margin-top:8px">
-                ${(h.highlights||[]).map(hl => `<span class="badge blue">${hl}</span>`).join('')}
-              </div>
+              ${h.flexible_dest?`<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:4px">📍 Nearby: ${h.flexible_dest}</div>`:''}
+              <div class="hotel-amenities">${(h.amenities||[]).map(a=>`<span class="amenity">${a}</span>`).join('')}</div>
+              <div class="flight-badges" style="margin-top:8px">${(h.highlights||[]).map(hl=>`<span class="badge blue">${hl}</span>`).join('')}</div>
             </div>
             <div class="hotel-price">
               <div class="price-amount">$${(h.price_per_night||0).toLocaleString()}</div>
               <div class="price-per">per night</div>
               <div class="price-total">$${(h.total_price||0).toLocaleString()} total (${nights} nights)</div>
+              <button class="select-pill" data-sel-type="hotel" data-sel-idx="${i}"
+                onclick="selectCard('hotel', ${i})">Select</button>
             </div>
           </div>
           ${hotelBookingLinks(h, d, nights)}
