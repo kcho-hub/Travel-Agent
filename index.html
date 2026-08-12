@@ -314,6 +314,22 @@
     .book-btn-booking { background: #003580; color: #fff; }
     .book-btn-direct  { background: var(--green); color: #fff; }
 
+    /* ─── LOAD MORE ─── */
+    .load-more-row { text-align: center; padding: 20px 0 8px; }
+    .load-more-btn {
+      background: white;
+      border: 2px solid var(--blue);
+      color: var(--blue);
+      border-radius: 999px;
+      padding: 10px 28px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .18s, color .18s, opacity .18s;
+    }
+    .load-more-btn:hover:not(:disabled) { background: var(--blue); color: white; }
+    .load-more-btn:disabled { opacity: .5; cursor: not-allowed; }
+
     /* ─── CARD SELECTION ─── */
     .option-card.selected {
       border-color: var(--blue);
@@ -993,18 +1009,27 @@
     <div class="results-section" id="outboundSection">
       <div class="results-section-title">🛫 Outbound Flights <span id="outboundCount"></span></div>
       <div class="options-list" id="outboundList"></div>
+      <div class="load-more-row" id="outboundLoadMore" style="display:none">
+        <button class="load-more-btn" onclick="loadMoreFlights('outbound')">+ Show more outbound flights</button>
+      </div>
     </div>
 
     <!-- Return Flights -->
     <div class="results-section" id="returnSection">
       <div class="results-section-title">🛬 Return Flights <span id="returnCount"></span></div>
       <div class="options-list" id="returnList"></div>
+      <div class="load-more-row" id="returnLoadMore" style="display:none">
+        <button class="load-more-btn" onclick="loadMoreFlights('ret')">+ Show more return flights</button>
+      </div>
     </div>
 
     <!-- Hotels -->
     <div class="results-section">
       <div class="results-section-title">🏨 Hotel Options <span id="hotelCount"></span></div>
       <div class="options-list" id="hotelsList"></div>
+      <div class="load-more-row" id="hotelsLoadMore" style="display:none">
+        <button class="load-more-btn" onclick="loadMoreHotels()">+ Show more hotels</button>
+      </div>
     </div>
 
   </div>
@@ -1540,8 +1565,8 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
 
     // Booking action buttons for selected items
     const actions = [];
-    if (ob)  actions.push(`<a href="${flightBookingLinks(ob,  _selD).match(/href="([^"]+)"/)?.[1] || '#'}" target="_blank" rel="noopener" class="book-btn book-btn-kayak" style="font-size:13px;padding:9px 16px">🔍 Book Outbound</a>`);
-    if (ret) actions.push(`<a href="${flightBookingLinks(ret, _selD).match(/href="([^"]+)"/)?.[1] || '#'}" target="_blank" rel="noopener" class="book-btn book-btn-google" style="font-size:13px;padding:9px 16px">✈️ Book Return</a>`);
+    if (ob)  actions.push(`<a href="${flightBookingLinks(ob,  _selD, 'outbound').match(/href="([^"]+)"/)?.[1] || '#'}" target="_blank" rel="noopener" class="book-btn book-btn-kayak" style="font-size:13px;padding:9px 16px">🔍 Book Outbound</a>`);
+    if (ret) actions.push(`<a href="${flightBookingLinks(ret, _selD, 'ret').match(/href="([^"]+)"/)?.[1] || '#'}" target="_blank" rel="noopener" class="book-btn book-btn-google" style="font-size:13px;padding:9px 16px">✈️ Book Return</a>`);
     if (htl) actions.push(`<a href="${hotelBookingLinks(htl,  _selD, _selNights).match(/href="([^"]+)"/)?.[1] || '#'}" target="_blank" rel="noopener" class="book-btn book-btn-booking" style="font-size:13px;padding:9px 16px">🏨 Book Hotel</a>`);
     document.getElementById('summaryActions').innerHTML = actions.join('');
   }
@@ -1593,16 +1618,58 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
         </div>`;
     });
 
+    document.getElementById('hotelsLoadMore').style.display = '';
     document.getElementById('results').classList.add('visible');
     document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  // ─── FLIGHT CARD (module-level so loadMoreFlights can reuse it) ───
+  function flightCard(f, i, selType, fromCode, toCode, d) {
+    return `
+      <div class="option-card fade-in" style="animation-delay:${0.1+i*0.08}s">
+        <div class="flight-card-body">
+          <div class="flight-airline">
+            <div class="airline-logo">${airlineEmoji(f.airline)}</div>
+            <div>
+              <div class="airline-name">${f.airline}</div>
+              <div class="airline-flight">${f.flight_number} · ${f.cabin_class}</div>
+              ${f.flexible_date ? `<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:2px">📅 ${f.flexible_date}</div>` : ''}
+              ${f.flexible_dest ? `<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:2px">📍 ${f.flexible_dest}</div>` : ''}
+            </div>
+          </div>
+          <div class="flight-route">
+            <div class="route-time"><div class="time">${f.departure_time}</div><div class="airport">${fromCode}</div></div>
+            <div class="route-line">
+              <div class="route-duration">${f.duration}</div>
+              <div class="route-line-bar"></div>
+              <div class="route-stops ${f.stops===0?'nonstop':''}">${f.stops===0?'Nonstop':f.stops+' stop'+(f.stops>1?'s':'')+(f.stop_city?' · '+f.stop_city:'')}</div>
+            </div>
+            <div class="route-time"><div class="time">${f.arrival_time}</div><div class="airport">${toCode}</div></div>
+          </div>
+          <div class="flight-price">
+            <div class="price-amount">$${(f.price_per_person||0).toLocaleString()}</div>
+            <div class="price-per">per person</div>
+            <div class="price-total">$${(f.total_price||0).toLocaleString()} total</div>
+            <button class="select-pill" data-sel-type="${selType}" data-sel-idx="${i}"
+              onclick="selectCard('${selType}', ${i})">Select</button>
+          </div>
+        </div>
+        <div class="flight-badges">
+          ${(f.highlights||[]).map(h=>`<span class="badge ${h.toLowerCase().includes('nonstop')||h.toLowerCase().includes('direct')?'green':h.toLowerCase().includes('bag')?'blue':''}">${h}</span>`).join('')}
+        </div>
+        ${flightBookingLinks(f, d, selType)}
+      </div>`;
+  }
+
   // ─── RENDER RESULTS ───
   function renderResults(data, d) {
-    // Restore sections that hotel-only may have hidden
+    // Restore sections that hotel-only may have hidden; hide load-more until render completes
     document.getElementById('dealsSection').style.display = '';
     document.getElementById('outboundSection').style.display = '';
     document.getElementById('returnSection').style.display = '';
+    document.getElementById('outboundLoadMore').style.display = 'none';
+    document.getElementById('returnLoadMore').style.display   = 'none';
+    document.getElementById('hotelsLoadMore').style.display   = 'none';
     document.getElementById('tripSummary').classList.remove('visible');
 
     // Reset selection state for new search
@@ -1655,56 +1722,18 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
         </div>`;
     });
 
-    // ── Helper: render a flight card ──
-    function flightCard(f, i, selType, fromCode, toCode) {
-      return `
-        <div class="option-card fade-in" style="animation-delay:${0.1+i*0.08}s">
-          <div class="flight-card-body">
-            <div class="flight-airline">
-              <div class="airline-logo">${airlineEmoji(f.airline)}</div>
-              <div>
-                <div class="airline-name">${f.airline}</div>
-                <div class="airline-flight">${f.flight_number} · ${f.cabin_class}</div>
-                ${f.flexible_date ? `<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:2px">📅 ${f.flexible_date}</div>` : ''}
-                ${f.flexible_dest ? `<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:2px">📍 ${f.flexible_dest}</div>` : ''}
-              </div>
-            </div>
-            <div class="flight-route">
-              <div class="route-time"><div class="time">${f.departure_time}</div><div class="airport">${fromCode}</div></div>
-              <div class="route-line">
-                <div class="route-duration">${f.duration}</div>
-                <div class="route-line-bar"></div>
-                <div class="route-stops ${f.stops===0?'nonstop':''}">${f.stops===0?'Nonstop':f.stops+' stop'+(f.stops>1?'s':'')+(f.stop_city?' · '+f.stop_city:'')}</div>
-              </div>
-              <div class="route-time"><div class="time">${f.arrival_time}</div><div class="airport">${toCode}</div></div>
-            </div>
-            <div class="flight-price">
-              <div class="price-amount">$${(f.price_per_person||0).toLocaleString()}</div>
-              <div class="price-per">per person</div>
-              <div class="price-total">$${(f.total_price||0).toLocaleString()} total</div>
-              <button class="select-pill" data-sel-type="${selType}" data-sel-idx="${i}"
-                onclick="selectCard('${selType}', ${i})">Select</button>
-            </div>
-          </div>
-          <div class="flight-badges">
-            ${(f.highlights||[]).map(h=>`<span class="badge ${h.toLowerCase().includes('nonstop')||h.toLowerCase().includes('direct')?'green':h.toLowerCase().includes('bag')?'blue':''}">${h}</span>`).join('')}
-          </div>
-          ${flightBookingLinks(f, d, selType)}
-        </div>`;
-    }
-
     // ── Outbound Flights ──
     const fromCode = extractCode(d.origin);
     const toCode   = extractCode(d.destination);
     document.getElementById('outboundCount').textContent = outboundFlights.length;
     document.getElementById('outboundList').innerHTML = outboundFlights.map((f, i) =>
-      flightCard(f, i, 'outbound', fromCode, toCode)).join('');
+      flightCard(f, i, 'outbound', fromCode, toCode, d)).join('');
 
     // ── Return Flights ──
     document.getElementById('returnSection').style.display = returnFlights.length ? '' : 'none';
     document.getElementById('returnCount').textContent = returnFlights.length;
     document.getElementById('returnList').innerHTML = returnFlights.map((f, i) =>
-      flightCard(f, i, 'ret', toCode, fromCode)).join('');
+      flightCard(f, i, 'ret', toCode, fromCode, d)).join('');
 
     // ── Hotels ──
     document.getElementById('hotelCount').textContent = (data.hotels||[]).length;
@@ -1738,6 +1767,9 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
         </div>`;
     });
 
+    document.getElementById('outboundLoadMore').style.display = '';
+    document.getElementById('returnLoadMore').style.display   = returnFlights.length ? '' : 'none';
+    document.getElementById('hotelsLoadMore').style.display   = '';
     document.getElementById('results').classList.add('visible');
     document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -1836,12 +1868,14 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
   }
 
   function hotelBookingLinks(h, d, nights) {
-    const dest     = encodeURIComponent(`${h.name} ${h.location}`);
+    const city     = encodeURIComponent(h.location || d.destination);
     const checkin  = d.depDate  || '';
     const checkout = d.retDate  || '';
     const guests   = d.travelers || 2;
-    const booking  = `https://www.booking.com/searchresults.html?ss=${dest}&checkin=${checkin}&checkout=${checkout}&no_rooms=1&group_adults=${guests}&nflt=&lang=en-us`;
-    const kayak    = `https://www.kayak.com/hotels/${encodeURIComponent(d.destination || h.location)}/${checkin}/${checkout}/${guests}adults`;
+    const [cy, cm, cday] = checkin.split('-');
+    const [oy, om, oday] = checkout.split('-');
+    const booking  = `https://www.booking.com/searchresults.html?ss=${city}&checkin_year=${cy}&checkin_month=${+cm}&checkin_monthday=${+cday}&checkout_year=${oy}&checkout_month=${+om}&checkout_monthday=${+oday}&group_adults=${guests}&no_rooms=1`;
+    const kayak    = `https://www.kayak.com/hotels/${encodeURIComponent(h.location || d.destination)}/${checkin}/${checkout}/${guests}adults`;
     const direct   = brandUrl(h.brand);
     return `
       <div class="booking-links">
@@ -1849,6 +1883,130 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
         <a href="${kayak}"   target="_blank" rel="noopener" class="book-btn book-btn-kayak">🔍 Kayak Hotels</a>
         ${direct ? `<a href="${direct}" target="_blank" rel="noopener" class="book-btn book-btn-direct">🌐 ${h.brand}</a>` : ''}
       </div>`;
+  }
+
+  // ─── LOAD MORE FLIGHTS ───
+  async function loadMoreFlights(direction) {
+    if (!_selData || !_selD) return;
+    const rowId = direction === 'ret' ? 'returnLoadMore' : 'outboundLoadMore';
+    const btn = document.getElementById(rowId)?.querySelector('button');
+    const origLabel = btn?.textContent;
+    if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+
+    const existing  = direction === 'ret' ? (_selData.return_flights || []) : (_selData.outbound_flights || []);
+    const from = direction === 'ret' ? extractCode(_selD.destination) : extractCode(_selD.origin);
+    const to   = direction === 'ret' ? extractCode(_selD.origin)      : extractCode(_selD.destination);
+    const date = direction === 'ret' ? _selD.retDate : _selD.depDate;
+    const skip = existing.map(f => `${f.airline} ${f.flight_number} departing ${f.departure_time}`).join('\n');
+
+    const prompt = `Return ONLY a valid JSON object, no markdown, no explanation:
+{"outbound_flights":[]}
+
+Provide 3 more one-way flight options from ${from} to ${to} on ${date} for ${_selD.travelers} traveler(s) in ${_selD.cabin} class.
+Do NOT repeat any of these already-shown flights:
+${skip}
+
+Schema for each item: {"airline":"","flight_number":"","cabin_class":"","departure_time":"","arrival_time":"","duration":"","stops":0,"stop_city":"","highlights":[],"price_per_person":0,"total_price":0}
+Vary prices and departure times.`;
+
+    try {
+      const apiKey   = document.getElementById('apiKey').value.trim();
+      const provider = document.getElementById('providerSelect').value;
+      const resp     = await fetch('/api/proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'x-provider': provider },
+        body: buildRequestBody(prompt, provider),
+      });
+      const rawData = await resp.json();
+      if (!resp.ok) throw new Error(rawData.error?.message || 'API error');
+      const newFlights = (parseAIJson(extractText(rawData, provider))).outbound_flights || [];
+      const startIdx   = existing.length;
+      const listId     = direction === 'ret' ? 'returnList' : 'outboundList';
+      const countId    = direction === 'ret' ? 'returnCount' : 'outboundCount';
+      const fFrom      = direction === 'ret' ? extractCode(_selD.destination) : extractCode(_selD.origin);
+      const fTo        = direction === 'ret' ? extractCode(_selD.origin)      : extractCode(_selD.destination);
+
+      if (direction === 'ret') _selData.return_flights   = [...existing, ...newFlights];
+      else                     _selData.outbound_flights = [...existing, ...newFlights];
+
+      const list = document.getElementById(listId);
+      newFlights.forEach((f, i) => { list.innerHTML += flightCard(f, startIdx + i, direction, fFrom, fTo, _selD); });
+      document.getElementById(countId).textContent = existing.length + newFlights.length;
+      if (btn) { btn.disabled = false; btn.textContent = origLabel; }
+    } catch(err) {
+      if (btn) { btn.disabled = false; btn.textContent = origLabel; }
+      showError('Could not load more flights: ' + err.message);
+    }
+  }
+
+  // ─── LOAD MORE HOTELS ───
+  async function loadMoreHotels() {
+    if (!_selData || !_selD) return;
+    const btn = document.getElementById('hotelsLoadMore')?.querySelector('button');
+    const origLabel = btn?.textContent;
+    if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+
+    const existing = _selData.hotels || [];
+    const skip     = existing.map(h => h.name).join(', ');
+
+    const prompt = `Return ONLY a valid JSON object, no markdown, no explanation:
+{"hotels":[]}
+
+Provide 3 more hotel options in ${_selD.destination} for ${_selD.travelers} guests, check-in ${_selD.depDate}, check-out ${_selD.retDate} (${_selNights} nights).
+Do NOT include these already-shown hotels: ${skip}
+
+Schema for each item: {"name":"","brand":"","stars":0,"rating":"","location":"","distance_from_center":"","amenities":[],"highlights":[],"price_per_night":0,"total_price":0}
+Vary price ranges and neighbourhoods.`;
+
+    try {
+      const apiKey   = document.getElementById('apiKey').value.trim();
+      const provider = document.getElementById('providerSelect').value;
+      const resp     = await fetch('/api/proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'x-provider': provider },
+        body: buildRequestBody(prompt, provider),
+      });
+      const rawData = await resp.json();
+      if (!resp.ok) throw new Error(rawData.error?.message || 'API error');
+      const newHotels = (parseAIJson(extractText(rawData, provider))).hotels || [];
+      const startIdx  = existing.length;
+      _selData.hotels = [...existing, ...newHotels];
+
+      const list = document.getElementById('hotelsList');
+      newHotels.forEach((h, idx_offset) => {
+        const idx   = startIdx + idx_offset;
+        const stars = '★'.repeat(Math.min(5, h.stars||4)) + '☆'.repeat(Math.max(0, 5-(h.stars||4)));
+        list.innerHTML += `
+          <div class="option-card fade-in">
+            <div class="hotel-card-body">
+              <div class="hotel-info">
+                <div class="hotel-name">${h.name}</div>
+                <div class="hotel-brand">${h.brand}</div>
+                <div class="hotel-meta">
+                  <div class="stars">${stars}</div>
+                  <div class="rating">${h.rating}</div>
+                  <div class="hotel-location">📍 ${h.location}${h.distance_from_center?' · '+h.distance_from_center:''}</div>
+                </div>
+                <div class="hotel-amenities">${(h.amenities||[]).map(a=>`<span class="amenity">${a}</span>`).join('')}</div>
+                <div class="flight-badges" style="margin-top:8px">${(h.highlights||[]).map(hl=>`<span class="badge blue">${hl}</span>`).join('')}</div>
+              </div>
+              <div class="hotel-price">
+                <div class="price-amount">$${(h.price_per_night||0).toLocaleString()}</div>
+                <div class="price-per">per night</div>
+                <div class="price-total">$${(h.total_price||0).toLocaleString()} total (${_selNights} nights)</div>
+                <button class="select-pill" data-sel-type="hotel" data-sel-idx="${idx}"
+                  onclick="selectCard('hotel', ${idx})">Select</button>
+              </div>
+            </div>
+            ${hotelBookingLinks(h, _selD, _selNights)}
+          </div>`;
+      });
+      document.getElementById('hotelCount').textContent = _selData.hotels.length;
+      if (btn) { btn.disabled = false; btn.textContent = origLabel; }
+    } catch(err) {
+      if (btn) { btn.disabled = false; btn.textContent = origLabel; }
+      showError('Could not load more hotels: ' + err.message);
+    }
   }
 
   function showError(msg) {
