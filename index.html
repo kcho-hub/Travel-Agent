@@ -840,6 +840,167 @@
       transition: background .15s;
     }
     .new-search-btn:hover { background: rgba(255,255,255,.1); }
+
+    /* ─── TRIP PLANNER PANEL ─── */
+    .planner-panel {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: var(--gray-50);
+      z-index: 500;
+      overflow-y: auto;
+    }
+    .planner-panel.visible { display: block; }
+    .planner-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: white;
+      border-bottom: 1.5px solid var(--gray-200);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .planner-back-btn {
+      background: none;
+      border: 1.5px solid var(--gray-300);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      color: var(--gray-600);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .planner-back-btn:hover { border-color: var(--gray-500); color: var(--gray-800); }
+    .planner-title { font-size: 1.1rem; font-weight: 800; color: var(--gray-900); flex: 1; }
+    .planner-counter { font-size: 13px; font-weight: 600; color: var(--blue); background: var(--blue-light); border: 1px solid #bfdbfe; border-radius: 999px; padding: 4px 12px; }
+    .planner-body { max-width: 900px; margin: 0 auto; padding: 32px 16px 80px; }
+    .spots-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 768px) { .spots-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .spots-grid { grid-template-columns: 1fr; } }
+    .spot-card {
+      background: white;
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: border-color .15s, box-shadow .15s, transform .15s;
+      cursor: pointer;
+    }
+    .spot-card:hover { border-color: var(--blue); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .spot-card.selected { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue), var(--shadow-md); }
+    .spot-card-img { width: 100%; height: 160px; object-fit: cover; background: var(--gray-100); display: block; }
+    .spot-card-body { padding: 14px; }
+    .spot-card-category { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; background: var(--blue-light); color: var(--blue); border-radius: 999px; padding: 2px 9px; margin-bottom: 6px; }
+    .spot-card.selected .spot-card-category { background: var(--blue); color: white; }
+    .spot-card-name { font-size: 14px; font-weight: 700; color: var(--gray-800); margin-bottom: 4px; }
+    .spot-card-desc { font-size: 12px; color: var(--gray-500); line-height: 1.5; margin-bottom: 8px; }
+    .spot-card-meta { display: flex; gap: 8px; flex-wrap: wrap; font-size: 11px; color: var(--gray-400); margin-bottom: 10px; }
+    .spot-card-select-btn {
+      width: 100%;
+      padding: 7px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--blue);
+      background: white;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .spot-card-select-btn:hover { background: var(--blue-light); }
+    .spot-card.selected .spot-card-select-btn { background: var(--blue); color: white; }
+    .generate-bar {
+      display: none;
+      position: sticky;
+      bottom: 24px;
+      text-align: center;
+      margin-top: 8px;
+      margin-bottom: 24px;
+    }
+    .generate-bar.visible { display: block; }
+    .generate-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      background: linear-gradient(135deg, var(--blue) 0%, #2563eb 100%);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(26,86,219,.45);
+      transition: transform .1s, box-shadow .1s, opacity .1s;
+    }
+    .generate-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(26,86,219,.5); }
+    .generate-btn:disabled { opacity: .6; cursor: not-allowed; }
+    .planner-loading { display: none; text-align: center; padding: 60px 24px; }
+    .planner-loading.visible { display: block; }
+    .itinerary-output { margin-top: 16px; }
+    .itinerary-section-title { font-size: 1.1rem; font-weight: 800; color: var(--gray-900); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--gray-100); }
+    .day-block {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .day-block-header {
+      background: linear-gradient(135deg, var(--blue) 0%, #2563eb 100%);
+      color: white;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .day-block-number { font-size: 13px; font-weight: 700; opacity: .75; text-transform: uppercase; }
+    .day-block-date { font-size: 16px; font-weight: 800; }
+    .day-block-theme { font-size: 12px; background: rgba(255,255,255,.18); border-radius: 999px; padding: 4px 12px; font-weight: 600; }
+    .day-slots { padding: 8px 0; }
+    .time-slot {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .time-slot:last-child { border-bottom: none; }
+    .time-slot:hover { background: var(--gray-50); }
+    .time-slot-icon { font-size: 18px; width: 28px; text-align: center; flex-shrink: 0; margin-top: 1px; }
+    .time-slot-time { font-size: 12px; font-weight: 700; color: var(--blue); width: 48px; flex-shrink: 0; padding-top: 2px; }
+    .time-slot-content { flex: 1; }
+    .time-slot-activity { font-size: 14px; font-weight: 600; color: var(--gray-800); margin-bottom: 2px; }
+    .time-slot-location { font-size: 12px; color: var(--gray-500); }
+    .time-slot-notes { font-size: 11px; color: var(--gray-400); margin-top: 2px; font-style: italic; }
+    .plan-trip-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      box-shadow: 0 3px 12px rgba(109,40,217,.4);
+      transition: transform .1s, box-shadow .1s;
+    }
+    .plan-trip-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(109,40,217,.45); }
   </style>
 </head>
 <body>
@@ -1137,6 +1298,31 @@
     Always verify final prices on the airline and hotel's official website before booking.
   </div>
 
+</div>
+
+<!-- TRIP PLANNER PANEL -->
+<div class="planner-panel" id="plannerPanel">
+  <div class="planner-header">
+    <button class="planner-back-btn" onclick="closePlanner()">← Back to Results</button>
+    <div class="planner-title" id="plannerTitle">Plan Your Trip</div>
+    <div class="planner-counter" id="plannerCounter" style="display:none">0 spots selected</div>
+  </div>
+  <div class="planner-body">
+    <div class="planner-loading" id="plannerLoading">
+      <div class="loading-spinner"></div>
+      <h3>Discovering top spots…</h3>
+      <p>Our AI is curating the best attractions and activities for your destination</p>
+    </div>
+    <div id="plannerContent" style="display:none">
+      <div class="spots-grid" id="spotsGrid"></div>
+      <div class="generate-bar" id="generateBar">
+        <button class="generate-btn" id="generateBtn" onclick="generateItinerary()" disabled>
+          ✨ Generate My Itinerary
+        </button>
+      </div>
+      <div class="itinerary-output" id="itineraryOutput"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1688,6 +1874,8 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
   // ─── TRIP SELECTION STATE ─────────────────────────────────────────────────
   let tripSel = { outbound: null, ret: null, hotel: null };
   let _selData = null, _selD = null, _selNights = 0;
+  let _plannerSpots = [];
+  let _selectedSpots = new Set();
 
   function selectCard(type, index) {
     if (type === 'outbound') tripSel.outbound = tripSel.outbound === index ? null : index;
@@ -2217,6 +2405,264 @@ Vary price ranges and neighbourhoods.`;
       if (btn) { btn.disabled = false; btn.textContent = origLabel; }
       showError('Could not load more hotels: ' + err.message);
     }
+  }
+
+  // ─── TRIP PLANNER ──────────────────────────────────────────────────────────
+  function openPlanner() {
+    _selectedSpots = new Set();
+    _plannerSpots = [];
+    const dest = _selD?.destination || 'Your Destination';
+    document.getElementById('plannerTitle').textContent = '🗺️ Plan Your Trip to ' + dest;
+    document.getElementById('plannerCounter').style.display = 'none';
+    document.getElementById('spotsGrid').innerHTML = '';
+    document.getElementById('generateBar').classList.remove('visible');
+    document.getElementById('itineraryOutput').innerHTML = '';
+    document.getElementById('plannerContent').style.display = 'none';
+    document.getElementById('plannerLoading').classList.add('visible');
+    document.getElementById('plannerPanel').classList.add('visible');
+    document.getElementById('plannerPanel').scrollTop = 0;
+    fetchSpots();
+  }
+
+  function closePlanner() {
+    document.getElementById('plannerPanel').classList.remove('visible');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function fetchSpots() {
+    const apiKey   = document.getElementById('apiKey').value.trim();
+    const provider = getProvider();
+    const dest     = _selD?.destination || 'the destination';
+
+    const prompt = `You are a travel expert. List 10 popular tourist spots, landmarks, and activities in ${dest}.
+Return ONLY valid raw JSON (no markdown, no explanation):
+{
+  "spots": [
+    {
+      "name": "Spot Name",
+      "category": "Landmark",
+      "description": "Short description of the spot.",
+      "duration": "2–3 hours",
+      "best_time": "Morning",
+      "image_url": "https://images.unsplash.com/photo-XXXXXXXXX?w=600&h=400&fit=crop",
+      "tags": ["iconic", "views"]
+    }
+  ]
+}
+
+Requirements:
+- Exactly 10 spots
+- Vary categories: Landmark, Museum, Nature, Food, Nightlife, Shopping, Adventure, Culture, Beach, Art
+- image_url: realistic Unsplash photo (format: https://images.unsplash.com/photo-XXXXXXXXXX?w=600&h=400&fit=crop)
+- description: 1–2 sentences, specific
+- duration: realistic visit duration
+- best_time: Morning / Afternoon / Evening / Any
+Return only raw JSON.`;
+
+    try {
+      const resp = await fetch('/api/proxy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'x-provider': provider,
+          'anthropic-version': '2023-06-01',
+        },
+        body: buildRequestBody(prompt, provider),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error?.message || `API error ${resp.status}`);
+      }
+      const data = await resp.json();
+      const text = extractText(data, provider);
+      const json = parseAIJson(text);
+      const spots = json.spots || [];
+      document.getElementById('plannerLoading').classList.remove('visible');
+      document.getElementById('plannerContent').style.display = 'block';
+      renderSpots(spots);
+    } catch (err) {
+      document.getElementById('plannerLoading').classList.remove('visible');
+      document.getElementById('plannerContent').style.display = 'block';
+      document.getElementById('spotsGrid').innerHTML =
+        `<div style="grid-column:1/-1;text-align:center;color:#991b1b;padding:40px 0">
+          ⚠️ Could not load spots: ${err.message}
+         </div>`;
+    }
+  }
+
+  function renderSpots(spots) {
+    _plannerSpots = spots;
+    const grid = document.getElementById('spotsGrid');
+    grid.innerHTML = spots.map((s, i) => `
+      <div class="spot-card" id="spotCard${i}" onclick="toggleSpot(${i})">
+        <img src="${s.image_url || ''}" alt="${s.name}" class="spot-card-img"
+             onerror="this.style.display='none'" />
+        <div class="spot-card-body">
+          <span class="spot-card-category">${s.category || 'Attraction'}</span>
+          <div class="spot-card-name">${s.name}</div>
+          <div class="spot-card-desc">${s.description || ''}</div>
+          <div class="spot-card-meta">
+            <span>⏱ ${s.duration || ''}</span>
+            <span>🕐 ${s.best_time || ''}</span>
+          </div>
+          <button class="spot-card-select-btn" id="spotBtn${i}">+ Add to Trip</button>
+        </div>
+      </div>`).join('');
+    document.getElementById('generateBar').classList.add('visible');
+  }
+
+  function toggleSpot(i) {
+    if (_selectedSpots.has(i)) {
+      _selectedSpots.delete(i);
+    } else {
+      _selectedSpots.add(i);
+    }
+    const card = document.getElementById('spotCard' + i);
+    const btn  = document.getElementById('spotBtn'  + i);
+    const sel  = _selectedSpots.has(i);
+    card.classList.toggle('selected', sel);
+    btn.textContent = sel ? '✓ Added' : '+ Add to Trip';
+
+    const count = _selectedSpots.size;
+    const counter = document.getElementById('plannerCounter');
+    counter.style.display = count > 0 ? '' : 'none';
+    counter.textContent = count + ' spot' + (count !== 1 ? 's' : '') + ' selected';
+    document.getElementById('generateBtn').disabled = count === 0;
+  }
+
+  async function generateItinerary() {
+    const apiKey   = document.getElementById('apiKey').value.trim();
+    const provider = getProvider();
+    const btn      = document.getElementById('generateBtn');
+    btn.disabled   = true;
+    btn.textContent = '⏳ Generating…';
+
+    const ob  = _selData?.outbound_flights?.[tripSel.outbound];
+    const ret = _selData?.return_flights?.[tripSel.ret];
+    const htl = _selData?.hotels?.[tripSel.hotel];
+    const selectedSpotsList = [..._selectedSpots].map(i => _plannerSpots[i]).filter(Boolean);
+
+    const arrivalTime   = ob?.arrival_time   || 'check arrival time';
+    const depFlight     = ret?.departure_time || 'check departure time';
+    const hotelName     = htl?.name          || 'your hotel';
+    const hotelLocation = htl?.location      || _selD?.destination;
+
+    const spotLines = selectedSpotsList.map(s =>
+      `- ${s.name} (${s.category}, ~${s.duration}, best: ${s.best_time})`
+    ).join('\n');
+
+    const prompt = `You are an expert travel planner. Create a detailed day-by-day itinerary for a trip to ${_selD?.destination}.
+
+Trip details:
+- Destination: ${_selD?.destination}
+- Departure date (outbound flight arrives): ${_selD?.depDate} at ${arrivalTime}
+- Return date (return flight departs): ${_selD?.retDate} at ${depFlight}
+- Hotel: ${hotelName}, ${hotelLocation}
+- Total nights: ${_selNights}
+- Number of travelers: ${_selD?.travelers}
+
+Selected spots to include:
+${spotLines}
+
+Return ONLY valid raw JSON (no markdown, no explanation):
+{
+  "itinerary": [
+    {
+      "day": 1,
+      "date": "${_selD?.depDate}",
+      "theme": "Arrival & First Impressions",
+      "slots": [
+        {
+          "time": "15:00",
+          "activity": "Arrive at airport, transfer to hotel",
+          "location": "${hotelName}",
+          "notes": "Check in",
+          "type": "travel"
+        }
+      ]
+    }
+  ]
+}
+
+Rules:
+- Day 1 starts after arrival time (${arrivalTime}) — no activities before then
+- Last day must end with hotel checkout and time to reach airport before ${depFlight}
+- Distribute ALL selected spots across the days
+- Include realistic meal slots (breakfast, lunch, dinner)
+- Each slot type: travel | attraction | meal | hotel
+- Times must be sequential within each day
+Return only raw JSON.`;
+
+    try {
+      const resp = await fetch('/api/proxy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'x-provider': provider,
+          'anthropic-version': '2023-06-01',
+        },
+        body: buildRequestBody(prompt, provider),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error?.message || `API error ${resp.status}`);
+      }
+      const data = await resp.json();
+      const text = extractText(data, provider);
+      const json = parseAIJson(text);
+      renderItinerary(json.itinerary || []);
+    } catch (err) {
+      document.getElementById('itineraryOutput').innerHTML =
+        `<div style="color:#991b1b;background:#fef2f2;border:1.5px solid #fecaca;border-radius:var(--radius-sm);padding:16px 20px;font-size:14px">
+          ⚠️ Could not generate itinerary: ${err.message}
+         </div>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '✨ Regenerate Itinerary';
+    }
+  }
+
+  function slotIcon(type) {
+    if (type === 'travel')     return '✈️';
+    if (type === 'attraction') return '🗺️';
+    if (type === 'meal')       return '🍽️';
+    if (type === 'hotel')      return '🏨';
+    return '📍';
+  }
+
+  function renderItinerary(itinerary) {
+    const out = document.getElementById('itineraryOutput');
+    if (!itinerary.length) {
+      out.innerHTML = '<p style="color:var(--gray-500);text-align:center;padding:24px">No itinerary data returned. Please try again.</p>';
+      return;
+    }
+    out.innerHTML = `
+      <div class="itinerary-section-title">📅 Your Day-by-Day Itinerary</div>
+      ${itinerary.map(day => `
+        <div class="day-block fade-in">
+          <div class="day-block-header">
+            <div>
+              <div class="day-block-number">Day ${day.day}</div>
+              <div class="day-block-date">${formatDate(day.date)}</div>
+            </div>
+            ${day.theme ? `<div class="day-block-theme">${day.theme}</div>` : ''}
+          </div>
+          <div class="day-slots">
+            ${(day.slots || []).map(slot => `
+              <div class="time-slot">
+                <div class="time-slot-icon">${slotIcon(slot.type)}</div>
+                <div class="time-slot-time">${slot.time || ''}</div>
+                <div class="time-slot-content">
+                  <div class="time-slot-activity">${slot.activity || ''}</div>
+                  ${slot.location ? `<div class="time-slot-location">📍 ${slot.location}</div>` : ''}
+                  ${slot.notes   ? `<div class="time-slot-notes">${slot.notes}</div>`           : ''}
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>`).join('')}`;
+    out.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function showError(msg) {
