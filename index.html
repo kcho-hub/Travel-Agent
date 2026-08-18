@@ -1767,6 +1767,9 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
     if (ob)  actions.push(`<a href="${flightBookingLinks(ob,  _selD, 'outbound').match(/href="([^"]+)"/)?.[1] || '#'}" target="_blank" rel="noopener" class="book-btn book-btn-kayak" style="font-size:13px;padding:9px 16px">🔍 Book Outbound</a>`);
     if (ret) actions.push(`<a href="${flightBookingLinks(ret, _selD, 'ret').match(/href="([^"]+)"/)?.[1] || '#'}" target="_blank" rel="noopener" class="book-btn book-btn-google" style="font-size:13px;padding:9px 16px">✈️ Book Return</a>`);
     if (htl) actions.push(`<a href="${hotelBookingLinks(htl,  _selD, _selNights).match(/href="([^"]+)"/)?.[1] || '#'}" target="_blank" rel="noopener" class="book-btn book-btn-booking" style="font-size:13px;padding:9px 16px">🏨 Book Hotel</a>`);
+    if (ob && ret && htl) {
+      actions.push(`<button class="plan-trip-btn" onclick="openPlanner()" style="font-size:13px;padding:9px 16px">✨ Plan My Trip</button>`);
+    }
     document.getElementById('summaryActions').innerHTML = actions.join('');
   }
 
@@ -1914,8 +1917,12 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
           </div>
           ${deal.reason ? `<div class="deal-reason">💡 ${deal.reason}</div>` : ''}
           <div class="deal-flight">🛫 ${ob.airline || ''} ${ob.flight_number || ''}</div>
+          <div class="deal-flight" style="font-size:12px;color:var(--gray-500)">   ${ob.departure_time || ''} → ${ob.arrival_time || ''} · ${ob.duration || ''}</div>
           <div class="deal-flight">🛬 ${ret.airline || ''} ${ret.flight_number || ''}</div>
+          <div class="deal-flight" style="font-size:12px;color:var(--gray-500)">   ${ret.departure_time || ''} → ${ret.arrival_time || ''} · ${ret.duration || ''}</div>
+          ${htl.image_url ? `<img src="${htl.image_url}" alt="${htl.name}" style="width:100%;height:120px;object-fit:cover;border-radius:6px;margin:8px 0" onerror="this.style.display='none'" />` : ''}
           <div class="deal-hotel">🏨 ${htl.name || ''}</div>
+          <div style="font-size:12px;color:var(--gray-500);margin-bottom:8px">${htl.stars || 4}★ • ${htl.location || ''} • $${(htl.price_per_night || 0).toLocaleString()}/night</div>
           <button class="deal-select-btn" onclick="applyBestDeal(${JSON.stringify(deal).replace(/"/g,'&quot;')})">
             ✓ Select This Deal
           </button>
