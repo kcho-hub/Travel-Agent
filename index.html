@@ -807,6 +807,26 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    /* ─── AD SLOTS ─── */
+    .ad-slot-container {
+      background: var(--gray-100);
+      border: 2px dashed var(--gray-300);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      text-align: center;
+      margin: 20px 0;
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--gray-500);
+      font-weight: 600;
+    }
+    .ad-slot-leaderboard { min-height: 90px; }
+    .ad-slot-sidebar { min-height: 250px; width: 300px; margin: 0 auto; }
+    .ad-slot-footer { min-height: 60px; }
+
     /* ─── NEW SEARCH BUTTON ─── */
     .new-search-btn {
       background: none;
@@ -823,6 +843,11 @@
   </style>
 </head>
 <body>
+
+<!-- TOP AD SLOT (Leaderboard 728x90) -->
+<div class="ad-slot-container ad-slot-leaderboard" id="adSlotTop">
+  <!-- Google AdSense or other ad network code goes here -->
+</div>
 
 <!-- HERO -->
 <div class="hero">
@@ -1048,6 +1073,11 @@
       </div>
     </div>
 
+    <!-- MIDDLE AD SLOT (Medium Rectangle 300x250) -->
+    <div class="ad-slot-container ad-slot-sidebar" id="adSlotMiddle" style="margin: 24px auto;">
+      <!-- Google AdSense or other ad network code goes here -->
+    </div>
+
     <!-- Best Deals -->
     <div class="results-section" id="dealsSection">
       <div class="results-section-title">🏆 Best Value Combinations</div>
@@ -1095,6 +1125,11 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- BOTTOM AD SLOT (Leaderboard 728x90) -->
+  <div class="ad-slot-container ad-slot-footer" id="adSlotBottom">
+    <!-- Google AdSense or other ad network code goes here -->
   </div>
 
   <div class="disclaimer">
