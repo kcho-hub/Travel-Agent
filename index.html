@@ -1245,20 +1245,6 @@
       <div class="deals-grid" id="dealsList"></div>
     </div>
 
-    <!-- Trip Summary -->
-    <div class="trip-summary" id="tripSummary">
-      <div class="trip-summary-title">
-        🧳 Your Trip Selection
-        <button class="summary-clear-btn" onclick="clearTripSelection()">✕ Clear</button>
-      </div>
-      <div class="summary-slots" id="summarySlotsEl"></div>
-      <div class="summary-total-bar">
-        <span class="summary-total-label">Estimated Total (all travelers)</span>
-        <span class="summary-total-amount" id="summaryTotal">$0</span>
-      </div>
-      <div class="summary-actions" id="summaryActions"></div>
-    </div>
-
     <!-- Outbound Flights -->
     <div class="results-section" id="outboundSection">
       <div class="results-section-title">🛫 Outbound Flights <span id="outboundCount"></span></div>
@@ -1293,6 +1279,20 @@
     <!-- Google AdSense or other ad network code goes here -->
   </div>
 
+  <!-- Trip Summary at Bottom -->
+  <div class="trip-summary" id="tripSummary">
+    <div class="trip-summary-title">
+      🧳 Your Trip Selection
+      <button class="summary-clear-btn" onclick="clearTripSelection()">✕ Clear</button>
+    </div>
+    <div class="summary-slots" id="summarySlotsEl"></div>
+    <div class="summary-total-bar">
+      <span class="summary-total-label">Estimated Total (all travelers)</span>
+      <span class="summary-total-amount" id="summaryTotal">$0</span>
+    </div>
+    <div class="summary-actions" id="summaryActions"></div>
+  </div>
+
   <div class="disclaimer">
     Prices are AI-estimated based on typical market rates and may not reflect real-time availability.<br/>
     Always verify final prices on the airline and hotel's official website before booking.
@@ -1318,8 +1318,11 @@
       <div id="attractionsPhase">
         <div class="spots-grid" id="spotsGrid"></div>
         <div class="generate-bar" id="generateBar">
-          <button class="generate-btn" id="generateBtn" onclick="fetchRestaurants()" disabled>
+          <button class="generate-btn" id="generateBtn" onclick="fetchRestaurants()" disabled style="margin-right:8px">
             ✨ Continue to Restaurants
+          </button>
+          <button class="generate-btn" id="moreActivitiesBtn" onclick="fetchMoreAttractions()" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); box-shadow: 0 4px 20px rgba(5,150,137,.4)">
+            🎯 + More Activities
           </button>
         </div>
       </div>
@@ -1332,8 +1335,11 @@
         </div>
         <div class="spots-grid" id="restaurantsGrid"></div>
         <div class="generate-bar" id="generateBar2">
-          <button class="generate-btn" id="generateBtn2" onclick="generateItinerary()" disabled>
+          <button class="generate-btn" id="generateBtn2" onclick="generateItinerary()" disabled style="margin-right:8px">
             ✨ Generate My Itinerary
+          </button>
+          <button class="generate-btn" id="moreRestaurantsBtn" onclick="fetchMoreRestaurants()" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); box-shadow: 0 4px 20px rgba(220,38,38,.4)">
+            🍽️ + More Restaurants
           </button>
         </div>
       </div>
@@ -1979,8 +1985,6 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
     if (htl) actions.push(`<a href="${hotelBookingLinks(htl,  _selD, _selNights).match(/href="([^"]+)"/)?.[1] || '#'}" target="_blank" rel="noopener" class="book-btn book-btn-booking" style="font-size:13px;padding:9px 16px">🏨 Book Hotel</a>`);
     if (ob && ret && htl) {
       actions.push(`<button class="plan-trip-btn" onclick="openPlanner()" style="font-size:13px;padding:9px 16px">✨ Plan My Trip</button>`);
-      actions.push(`<button class="plan-trip-btn" onclick="fetchMoreAttractions()" style="font-size:13px;padding:9px 16px">🎯 + More Activities</button>`);
-      actions.push(`<button class="plan-trip-btn" onclick="fetchMoreRestaurants()" style="font-size:13px;padding:9px 16px">🍽️ + More Restaurants</button>`);
     }
     document.getElementById('summaryActions').innerHTML = actions.join('');
   }
