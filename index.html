@@ -2694,16 +2694,8 @@ Return only raw JSON.`;
     const dest     = _selD?.destination || 'the destination';
     const existingSpots = _plannerSpots.map(s => s.name).join(', ');
 
-    _selectedSpots = new Set();
     document.getElementById('plannerTitle').textContent = '🗺️ Plan Your Trip to ' + dest;
-    document.getElementById('spotsGrid').innerHTML = '';
-    document.getElementById('generateBar').classList.remove('visible');
     document.getElementById('plannerLoading').classList.add('visible');
-    document.getElementById('plannerPanel').classList.add('visible');
-    document.getElementById('attractionsPhase').style.display = 'block';
-    document.getElementById('restaurantsPhase').style.display = 'none';
-    document.getElementById('itineraryPhase').style.display = 'none';
-    document.getElementById('plannerPanel').scrollTop = 0;
 
     const prompt = `You are a travel expert. List 10 DIFFERENT (not the ones listed below) popular tourist spots, landmarks, and activities in ${dest}.
 Do NOT include: ${existingSpots}
@@ -2930,8 +2922,43 @@ Return only raw JSON.`;
       out.innerHTML = '<p style="color:var(--gray-500);text-align:center;padding:24px">No itinerary data returned. Please try again.</p>';
       return;
     }
+
+    // Build booking links from selected data
+    const obFlight = tripSel.ob ? tripSel.ob[0] : null;
+    const retFlight = tripSel.ret ? tripSel.ret[0] : null;
+    const hotel = tripSel.htl ? tripSel.htl[0] : null;
+
+    const obBookUrl = obFlight ? flightBookingLinks(obFlight, _selData?.depDate, 'outbound').kayak : '#';
+    const retBookUrl = retFlight ? flightBookingLinks(retFlight, _selData?.retDate, 'return').kayak : '#';
+    const hotelBookUrl = hotel ? hotelBookingLinks(hotel, _selData?.depDate, _selNights).booking : '#';
+
     out.innerHTML = `
       <div class="itinerary-section-title">📅 Your Day-by-Day Itinerary</div>
+
+      <!-- Action Buttons -->
+      <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;justify-content:center">
+        <button onclick="exportItinerary()" style="padding:10px 16px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px">
+          📥 Export Itinerary
+        </button>
+        <button onclick="shareItinerary()" style="padding:10px 16px;background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px">
+          🔗 Share Trip
+        </button>
+      </div>
+
+      <!-- Booking & Prep Section -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:24px">
+        <a href="${obBookUrl}" target="_blank" style="display:block;padding:16px;background:linear-gradient(135deg,#f97316,#ea580c);color:white;text-decoration:none;border-radius:8px;text-align:center;font-weight:600;transition:transform .2s">
+          ✈️ Book Outbound Flight
+        </a>
+        <a href="${retBookUrl}" target="_blank" style="display:block;padding:16px;background:linear-gradient(135deg,#f97316,#ea580c);color:white;text-decoration:none;border-radius:8px;text-align:center;font-weight:600;transition:transform .2s">
+          ✈️ Book Return Flight
+        </a>
+        <a href="${hotelBookUrl}" target="_blank" style="display:block;padding:16px;background:linear-gradient(135deg,#ec4899,#be185d);color:white;text-decoration:none;border-radius:8px;text-align:center;font-weight:600;transition:transform .2s">
+          🏨 Book Hotel
+        </a>
+      </div>
+
+      <!-- Itinerary Days -->
       ${itinerary.map(day => `
         <div class="day-block fade-in">
           <div class="day-block-header">
@@ -2953,8 +2980,103 @@ Return only raw JSON.`;
                 </div>
               </div>`).join('')}
           </div>
-        </div>`).join('')}`;
+        </div>`).join('')}
+
+      <!-- Pre-Trip Prep Checklist -->
+      <div style="margin-top:32px">
+        <div class="itinerary-section-title">✅ Pre-Trip Preparation Checklist</div>
+        <div id="prepChecklist" style="background:var(--gray-50);border-radius:12px;padding:24px;border-left:4px solid var(--blue)">
+          <p style="color:var(--gray-600);text-align:center;margin-bottom:12px">Loading preparation checklist...</p>
+        </div>
+      </div>
+    `;
+
+    // Fetch and render prep checklist after main itinerary loads
+    setTimeout(() => fetchPrepChecklist(), 500);
     out.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function exportItinerary() {
+    const text = document.getElementById('itineraryOutput').innerText;
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', 'trip-itinerary.txt');
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  }
+
+  function shareItinerary() {
+    const text = document.getElementById('itineraryOutput').innerText;
+    if (navigator.share) {
+      navigator.share({ title: '✈️ My Trip Itinerary', text: text });
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Itinerary copied to clipboard! You can paste it anywhere to share.');
+      });
+    }
+  }
+
+  async function fetchPrepChecklist() {
+    const apiKey = document.getElementById('apiKey').value.trim();
+    const provider = getProvider();
+    const dest = _selD?.destination || 'destination';
+    const depDate = _selData?.depDate || new Date().toISOString().split('T')[0];
+    const retDate = _selData?.retDate || new Date().toISOString().split('T')[0];
+
+    const prompt = `Create a pre-trip preparation checklist for a trip to ${dest} from ${depDate} to ${retDate}.
+Return ONLY valid raw JSON (no markdown, no explanation):
+{
+  "checklist": [
+    {"item": "Item name", "category": "Category", "priority": "High/Medium/Low"}
+  ]
+}
+Include categories: Documents, Packing, Health, Travel, Accommodation, Money, Activities (8-12 items total).
+Return only raw JSON.`;
+
+    try {
+      const resp = await fetch('/api/proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'x-provider': provider, 'anthropic-version': '2023-06-01' },
+        body: buildRequestBody(prompt, provider),
+      });
+      if (!resp.ok) throw new Error('API error');
+      const data = await resp.json();
+      const text = extractText(data, provider);
+      const json = parseAIJson(text);
+      const items = json.checklist || [];
+
+      const checklistDiv = document.getElementById('prepChecklist');
+      if (items.length === 0) {
+        checklistDiv.innerHTML = '<p style="color:var(--gray-600)">No items returned. Please try again.</p>';
+        return;
+      }
+
+      const grouped = {};
+      items.forEach(item => {
+        if (!grouped[item.category]) grouped[item.category] = [];
+        grouped[item.category].push(item);
+      });
+
+      checklistDiv.innerHTML = Object.entries(grouped).map(([cat, items]) => `
+        <div style="margin-bottom:20px">
+          <div style="font-weight:700;color:var(--gray-900);margin-bottom:12px;font-size:14px">${cat}</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            ${items.map((item, idx) => `
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gray-700)">
+                <input type="checkbox" id="prep${cat}${idx}" style="cursor:pointer;width:18px;height:18px" />
+                <span>${item.item}</span>
+                ${item.priority === 'High' ? '<span style="color:#dc2626;font-weight:600;font-size:11px">● HIGH</span>' : item.priority === 'Medium' ? '<span style="color:#f59e0b;font-weight:600;font-size:11px">● MED</span>' : '<span style="color:#6b7280;font-weight:600;font-size:11px">● LOW</span>'}
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      document.getElementById('prepChecklist').innerHTML = `<p style="color:#991b1b">⚠️ Could not load checklist: ${err.message}</p>`;
+    }
   }
 
   function showError(msg) {
