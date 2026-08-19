@@ -1001,6 +1001,139 @@
       transition: transform .1s, box-shadow .1s;
     }
     .plan-trip-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(109,40,217,.45); }
+
+    /* ─── SCROLLABLE IMAGE GALLERIES ─── */
+    .image-gallery {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 8px 0;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+    .image-gallery::-webkit-scrollbar {
+      height: 6px;
+    }
+    .image-gallery::-webkit-scrollbar-track {
+      background: var(--gray-100);
+      border-radius: 3px;
+    }
+    .image-gallery::-webkit-scrollbar-thumb {
+      background: var(--gray-300);
+      border-radius: 3px;
+    }
+    .image-gallery::-webkit-scrollbar-thumb:hover {
+      background: var(--gray-400);
+    }
+    .gallery-thumb {
+      flex: 0 0 120px;
+      height: 80px;
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform .2s, border-color .2s;
+      background: var(--gray-100);
+    }
+    .gallery-thumb:hover {
+      transform: scale(1.05);
+      border-color: var(--blue);
+    }
+    .gallery-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .export-preview-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .export-preview-modal.visible {
+      display: flex;
+    }
+    .export-preview-content {
+      background: white;
+      border-radius: 16px;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 32px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    .export-preview-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--gray-100);
+    }
+    .export-preview-header h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin: 0;
+    }
+    .export-preview-close {
+      margin-left: auto;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--gray-400);
+    }
+    .export-preview-close:hover {
+      color: var(--gray-600);
+    }
+    .export-preview-item {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--gray-700);
+      margin-bottom: 12px;
+      padding: 12px;
+      background: var(--gray-50);
+      border-left: 3px solid var(--blue);
+      border-radius: 4px;
+    }
+    .export-preview-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 2px solid var(--gray-100);
+    }
+    .export-preview-actions button {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .export-btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+    }
+    .export-btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+    }
+    .export-btn-secondary {
+      background: var(--gray-100);
+      color: var(--gray-700);
+    }
+    .export-btn-secondary:hover {
+      background: var(--gray-200);
+    }
   </style>
 </head>
 <body>
@@ -1335,11 +1468,13 @@
         </div>
         <div class="spots-grid" id="restaurantsGrid"></div>
         <div class="generate-bar" id="generateBar2">
-          <button class="generate-btn" id="generateBtn2" onclick="generateItinerary()" disabled style="margin-right:8px">
-            ✨ Generate My Itinerary
-          </button>
           <button class="generate-btn" id="moreRestaurantsBtn" onclick="fetchMoreRestaurants()" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); box-shadow: 0 4px 20px rgba(220,38,38,.4)">
             🍽️ + More Restaurants
+          </button>
+        </div>
+        <div class="generate-bar" id="generateBarFinal" style="position:fixed;bottom:32px;left:50%;transform:translateX(-50%);width:auto;margin:0;z-index:501">
+          <button class="generate-btn" id="generateBtn2" onclick="generateItinerary()" disabled style="padding:14px 28px;font-size:15px;font-weight:700">
+            ✨ Generate My Itinerary
           </button>
         </div>
       </div>
@@ -1347,6 +1482,25 @@
       <div id="itineraryPhase" style="display:none">
         <div class="itinerary-output" id="itineraryOutput"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Export Preview Modal -->
+<div class="export-preview-modal" id="exportPreviewModal">
+  <div class="export-preview-content">
+    <div class="export-preview-header">
+      <span style="font-size:28px">📋</span>
+      <h2>Export Itinerary</h2>
+      <button class="export-preview-close" onclick="closeExportPreview()">×</button>
+    </div>
+    <div id="previewContent" style="max-height:400px;overflow-y:auto;margin-bottom:16px">
+      <p style="color:var(--gray-500);text-align:center">Loading preview...</p>
+    </div>
+    <div class="export-preview-actions">
+      <button class="export-btn-secondary" onclick="closeExportPreview()">Cancel</button>
+      <button class="export-btn-primary" onclick="confirmExportItinerary()">📥 Download as TXT</button>
+      <button class="export-btn-primary" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed)" onclick="downloadAsJSON()">📥 Download as JSON</button>
     </div>
   </div>
 </div>
@@ -1478,10 +1632,23 @@
     };
   }
 
+  // ─── PARSE BUDGET PER NIGHT ───
+  function parseBudgetPerNight(budget) {
+    const budgetMap = {
+      'any': 'No limit',
+      'under1000': 'Under $150/night',
+      '1000-2000': '$150–$250/night',
+      '2000-3500': '$250–$440/night',
+      '3500-6000': '$440–$750/night',
+      'over6000': 'Over $750/night'
+    };
+    return budgetMap[budget] || 'No budget limit';
+  }
+
   // ─── BUILD PROMPT ───
   function buildPrompt(d) {
     const brandStr = d.brands.length ? d.brands.join(', ') : 'Any brand';
-    const budgetStr = d.budget === 'any' ? 'No budget limit' : d.budget;
+    const budgetPerNight = parseBudgetPerNight(d.budget);
     const nights = Math.round((new Date(d.retDate) - new Date(d.depDate)) / 86400000);
 
     return `You are a professional travel agent AI. The user wants to find flights and hotels.
@@ -1497,7 +1664,7 @@ Search parameters:
 - Flexible destination: ${d.flexLocation ? `Yes, within ${d.flexMiles} miles of ${d.destination}` : 'No'}
 - Preferred hotel brands: ${brandStr}
 - Preferred hotel location: ${d.hotelLocation || 'Any area'}
-- Budget: ${budgetStr} total
+- Budget per night: ${budgetPerNight}
 - Hotel stars: ${d.stars === 'any' ? 'Any' : d.stars + '+'}
 
 Return ONLY valid raw JSON (no markdown, no explanation) using this exact structure:
@@ -1575,7 +1742,7 @@ REQUIREMENTS — never fewer than specified:
 - hotels: exactly 8 options
 
 For outbound AND return flights, vary departure times across morning (05:00–09:00), midday (10:00–14:00), afternoon (14:00–18:00), and evening (18:00–23:59). Use different airlines. Mix nonstop and 1-stop. Include a budget, mid-range, and premium option.
-For hotels: mix 3★, 4★, 5★; budget/mid/luxury pricing; different neighbourhoods. Include image_url for each hotel with realistic Unsplash URLs of luxury hotel rooms/lobbies (format: https://images.unsplash.com/photo-XXXXXXXXX?w=400&h=300&fit=crop).
+For hotels: STRICTLY respect the budget per night limit. Mix 3★, 4★, 5★ within the budget; different neighbourhoods. If budget is "$150–$250/night", ALL hotels MUST be between $150–$250 per night. Include image_url for each hotel with realistic Unsplash URLs of luxury hotel rooms/lobbies (format: https://images.unsplash.com/photo-XXXXXXXXX?w=400&h=300&fit=crop).
 If flexible dates/destinations enabled, mark 1–2 options in flexible_date or flexible_dest.
 Make all prices realistic for the route and season. Return only raw JSON.`;
   }
@@ -1801,13 +1968,16 @@ Make all prices realistic for the route and season. Return only raw JSON.`;
       : 7;
     const brandStr = d.brands.length ? d.brands.join(', ') : 'Any brand';
 
+    // Parse budget to per-night constraint
+    const budgetPerNight = parseBudgetPerNight(d.budget);
+
     const prompt = `You are a professional travel agent AI. Find hotels only for this search:
 - Destination: ${d.destination}
 - Check-in: ${d.depDate || 'flexible'}
 - Check-out: ${d.retDate || 'flexible'} (${nights} nights)
 - Travelers: ${d.travelers}
 - Preferred hotel brands: ${brandStr}
-- Budget: ${d.budget === 'any' ? 'No limit' : d.budget} total
+- Budget per night: ${budgetPerNight}
 - Hotel stars: ${d.stars === 'any' ? 'Any' : d.stars + '+'}
 ${d.flexLocation ? `- Flexible location: within ${d.flexMiles} miles of destination` : ''}
 
@@ -2274,6 +2444,25 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
     return '';
   }
 
+  function buildFlightBookingUrl(f, d, direction) {
+    const isReturn = direction === 'return';
+    const from  = isReturn ? extractCode(d.destination) : extractCode(d.origin);
+    const to    = isReturn ? extractCode(d.origin)      : extractCode(d.destination);
+    const date  = isReturn ? d.retDate : d.depDate;
+    const n     = d.travelers || 1;
+    return `https://www.kayak.com/flights/${from}-${to}/${date}/${n}adults`;
+  }
+
+  function buildHotelBookingUrl(h, d) {
+    const city     = encodeURIComponent(h.location || h.name || 'hotel');
+    const checkin  = d.depDate  || '';
+    const checkout = d.retDate  || '';
+    const guests   = d.travelers || 2;
+    const [cy, cm, cday] = checkin.split('-');
+    const [oy, om, oday] = checkout.split('-');
+    return `https://www.booking.com/searchresults.html?ss=${city}&checkin_year=${cy}&checkin_month=${+cm}&checkin_monthday=${+cday}&checkout_year=${oy}&checkout_month=${+om}&checkout_monthday=${+oday}&group_adults=${guests}&no_rooms=1`;
+  }
+
   function flightBookingLinks(f, d, direction) {
     const isReturn = direction === 'ret';
     const from  = isReturn ? extractCode(d.destination) : extractCode(d.origin);
@@ -2536,10 +2725,16 @@ Return only raw JSON.`;
     const grid = document.getElementById('spotsGrid');
     const html = spots.map((s, i) => {
       const cardIdx = startIdx + i;
+      const imageUrls = s.image_urls || (s.image_url ? [s.image_url] : []);
       return `
       <div class="spot-card" id="spotCard${cardIdx}" onclick="toggleSpot(${cardIdx})">
         <img src="${s.image_url || ''}" alt="${s.name}" class="spot-card-img"
              onerror="this.style.display='none'" />
+        ${imageUrls.length > 1 ? `
+        <div class="image-gallery" style="padding:6px;border-bottom:1px solid var(--gray-100)">
+          ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${url}" alt="Photo ${idx + 1}" onerror="this.style.display='none'" /></div>`).join('')}
+        </div>
+        ` : ''}
         <div class="spot-card-body">
           <span class="spot-card-category">${s.category || 'Attraction'}</span>
           <div class="spot-card-name">${s.name}</div>
@@ -2656,10 +2851,17 @@ Return only raw JSON.`;
   function renderRestaurants(restaurants) {
     _plannerRestaurants = restaurants;
     const grid = document.getElementById('restaurantsGrid');
-    grid.innerHTML = restaurants.map((r, i) => `
+    grid.innerHTML = restaurants.map((r, i) => {
+      const imageUrls = r.image_urls || (r.image_url ? [r.image_url] : []);
+      return `
       <div class="spot-card" id="restCard${i}" onclick="toggleRestaurant(${i})">
         <img src="${r.image_url || ''}" alt="${r.name}" class="spot-card-img"
              onerror="this.style.display='none'" />
+        ${imageUrls.length > 1 ? `
+        <div class="image-gallery" style="padding:6px;border-bottom:1px solid var(--gray-100)">
+          ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${url}" alt="Photo ${idx + 1}" onerror="this.style.display='none'" /></div>`).join('')}
+        </div>
+        ` : ''}
         <div class="spot-card-body">
           <span class="spot-card-category">${r.cuisine || 'Restaurant'}</span>
           <div class="spot-card-name">${r.name}</div>
@@ -2670,7 +2872,8 @@ Return only raw JSON.`;
           </div>
           <button class="spot-card-select-btn" id="restBtn${i}">+ Add to Trip</button>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     document.getElementById('generateBar2').classList.add('visible');
     document.getElementById('generateBtn2').disabled = false;
   }
@@ -2928,9 +3131,10 @@ Return only raw JSON.`;
     const retFlight = tripSel.ret ? tripSel.ret[0] : null;
     const hotel = tripSel.htl ? tripSel.htl[0] : null;
 
-    const obBookUrl = obFlight ? flightBookingLinks(obFlight, _selData?.depDate, 'outbound').kayak : '#';
-    const retBookUrl = retFlight ? flightBookingLinks(retFlight, _selData?.retDate, 'return').kayak : '#';
-    const hotelBookUrl = hotel ? hotelBookingLinks(hotel, _selData?.depDate, _selNights).booking : '#';
+    // Build Kayak & direct booking URLs
+    const obBookUrl = obFlight && _selD ? buildFlightBookingUrl(obFlight, _selD, 'outbound') : '#';
+    const retBookUrl = retFlight && _selD ? buildFlightBookingUrl(retFlight, _selD, 'return') : '#';
+    const hotelBookUrl = hotel && _selD ? buildHotelBookingUrl(hotel, _selD) : '#';
 
     out.innerHTML = `
       <div class="itinerary-section-title">📅 Your Day-by-Day Itinerary</div>
@@ -2998,6 +3202,20 @@ Return only raw JSON.`;
 
   function exportItinerary() {
     const text = document.getElementById('itineraryOutput').innerText;
+    const lines = text.split('\n').slice(0, 20).filter(l => l.trim()).map(l => l.trim());
+    const preview = lines.slice(0, 10).join('\n');
+    document.getElementById('previewContent').innerHTML = preview.split('\n').map(line =>
+      `<div class="export-preview-item">${line || '&nbsp;'}</div>`
+    ).join('');
+    document.getElementById('exportPreviewModal').classList.add('visible');
+  }
+
+  function closeExportPreview() {
+    document.getElementById('exportPreviewModal').classList.remove('visible');
+  }
+
+  function confirmExportItinerary() {
+    const text = document.getElementById('itineraryOutput').innerText;
     const element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
     element.setAttribute('download', 'trip-itinerary.txt');
@@ -3005,6 +3223,36 @@ Return only raw JSON.`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
+    closeExportPreview();
+  }
+
+  function downloadAsJSON() {
+    const itineraryDiv = document.getElementById('itineraryOutput');
+    const json = {
+      trip: {
+        destination: _selD?.destination || 'Unknown',
+        depDate: _selData?.depDate || '',
+        retDate: _selData?.retDate || '',
+        travelers: _selData?.travelers || 0,
+        nights: _selNights || 0
+      },
+      selections: {
+        outboundFlight: tripSel.ob ? tripSel.ob[0] : null,
+        returnFlight: tripSel.ret ? tripSel.ret[0] : null,
+        hotel: tripSel.htl ? tripSel.htl[0] : null
+      },
+      selectedAttractions: Array.from(_selectedSpots).map(i => _plannerSpots[i]?.name || ''),
+      selectedRestaurants: Array.from(_selectedRestaurants).map(i => _plannerRestaurants[i]?.name || ''),
+      itinerary: itineraryDiv.innerText
+    };
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(json, null, 2)));
+    element.setAttribute('download', 'trip-itinerary.json');
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    closeExportPreview();
   }
 
   function shareItinerary() {
