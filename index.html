@@ -1979,6 +1979,8 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
     if (htl) actions.push(`<a href="${hotelBookingLinks(htl,  _selD, _selNights).match(/href="([^"]+)"/)?.[1] || '#'}" target="_blank" rel="noopener" class="book-btn book-btn-booking" style="font-size:13px;padding:9px 16px">🏨 Book Hotel</a>`);
     if (ob && ret && htl) {
       actions.push(`<button class="plan-trip-btn" onclick="openPlanner()" style="font-size:13px;padding:9px 16px">✨ Plan My Trip</button>`);
+      actions.push(`<button class="plan-trip-btn" onclick="fetchMoreAttractions()" style="font-size:13px;padding:9px 16px">🎯 + More Activities</button>`);
+      actions.push(`<button class="plan-trip-btn" onclick="fetchMoreRestaurants()" style="font-size:13px;padding:9px 16px">🍽️ + More Restaurants</button>`);
     }
     document.getElementById('summaryActions').innerHTML = actions.join('');
   }
@@ -2562,6 +2564,7 @@ Return only raw JSON.`;
   function backToAttractions() {
     document.getElementById('attractionsPhase').style.display = 'block';
     document.getElementById('restaurantsPhase').style.display = 'none';
+    document.getElementById('itineraryPhase').style.display = 'none';
   }
 
   async function fetchRestaurants() {
@@ -2571,6 +2574,7 @@ Return only raw JSON.`;
 
     document.getElementById('attractionsPhase').style.display = 'none';
     document.getElementById('restaurantsPhase').style.display = 'none';
+    document.getElementById('itineraryPhase').style.display = 'none';
     document.getElementById('plannerLoading').classList.add('visible');
 
     const prompt = `You are a food and travel expert. List 15 popular restaurants in ${dest} with different cuisines and price ranges.
@@ -2662,6 +2666,102 @@ Return only raw JSON.`;
     const sel  = _selectedRestaurants.has(i);
     card.classList.toggle('selected', sel);
     btn.textContent = sel ? '✓ Added' : '+ Add to Trip';
+  }
+
+  async function fetchMoreAttractions() {
+    const apiKey   = document.getElementById('apiKey').value.trim();
+    const provider = getProvider();
+    const dest     = _selD?.destination || 'the destination';
+    const existingSpots = _plannerSpots.map(s => s.name).join(', ');
+
+    _selectedSpots = new Set();
+    document.getElementById('plannerTitle').textContent = '🗺️ Plan Your Trip to ' + dest;
+    document.getElementById('spotsGrid').innerHTML = '';
+    document.getElementById('generateBar').classList.remove('visible');
+    document.getElementById('plannerLoading').classList.add('visible');
+    document.getElementById('plannerPanel').classList.add('visible');
+    document.getElementById('attractionsPhase').style.display = 'block';
+    document.getElementById('restaurantsPhase').style.display = 'none';
+    document.getElementById('itineraryPhase').style.display = 'none';
+    document.getElementById('plannerPanel').scrollTop = 0;
+
+    const prompt = `You are a travel expert. List 10 DIFFERENT (not the ones listed below) popular tourist spots, landmarks, and activities in ${dest}.
+Do NOT include: ${existingSpots}
+Return ONLY valid raw JSON (no markdown, no explanation):
+{
+  "spots": [
+    {"name": "","category": "","description": "","duration": "","best_time": "","image_url": "","tags": []}
+  ]
+}
+Requirements:
+- Exactly 10 unique spots NOT already listed- Vary categories- image_url: realistic Unsplash photo- description: 1–2 sentences
+Return only raw JSON.`;
+
+    try {
+      const resp = await fetch('/api/proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'x-provider': provider, 'anthropic-version': '2023-06-01' },
+        body: buildRequestBody(prompt, provider),
+      });
+      if (!resp.ok) throw new Error('API error');
+      const data = await resp.json();
+      const text = extractText(data, provider);
+      const json = parseAIJson(text);
+      document.getElementById('plannerLoading').classList.remove('visible');
+      renderSpots(json.spots || []);
+    } catch (err) {
+      document.getElementById('plannerLoading').classList.remove('visible');
+      document.getElementById('spotsGrid').innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#991b1b">⚠️ Error: ${err.message}</div>`;
+    }
+  }
+
+  async function fetchMoreRestaurants() {
+    const apiKey   = document.getElementById('apiKey').value.trim();
+    const provider = getProvider();
+    const dest     = _selD?.destination || 'the destination';
+    const existingRest = _plannerRestaurants.map(r => r.name).join(', ');
+
+    _selectedRestaurants = new Set();
+    document.getElementById('plannerTitle').textContent = '🗺️ Plan Your Trip to ' + dest;
+    document.getElementById('restaurantsGrid').innerHTML = '';
+    document.getElementById('generateBtn2').disabled = false;
+    document.getElementById('plannerLoading').classList.add('visible');
+    document.getElementById('plannerPanel').classList.add('visible');
+    document.getElementById('attractionsPhase').style.display = 'none';
+    document.getElementById('restaurantsPhase').style.display = 'block';
+    document.getElementById('itineraryPhase').style.display = 'none';
+    document.getElementById('plannerPanel').scrollTop = 0;
+
+    const prompt = `You are a food expert. List 15 DIFFERENT (not listed below) popular restaurants in ${dest}.
+Do NOT include: ${existingRest}
+Return ONLY valid raw JSON (no markdown, no explanation):
+{
+  "restaurants": [
+    {"name": "","cuisine": "","price_range": "","description": "","meal_type": "","image_url": "","tags": []}
+  ]
+}
+Requirements:
+- Exactly 15 unique restaurants NOT already listed
+- Vary cuisines and price ranges
+- image_url: realistic food/restaurant photo
+Return only raw JSON.`;
+
+    try {
+      const resp = await fetch('/api/proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'x-provider': provider, 'anthropic-version': '2023-06-01' },
+        body: buildRequestBody(prompt, provider),
+      });
+      if (!resp.ok) throw new Error('API error');
+      const data = await resp.json();
+      const text = extractText(data, provider);
+      const json = parseAIJson(text);
+      document.getElementById('plannerLoading').classList.remove('visible');
+      renderRestaurants(json.restaurants || []);
+    } catch (err) {
+      document.getElementById('plannerLoading').classList.remove('visible');
+      document.getElementById('restaurantsGrid').innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#991b1b">⚠️ Error: ${err.message}</div>`;
+    }
   }
 
   async function generateItinerary() {
