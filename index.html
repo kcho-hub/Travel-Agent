@@ -2525,11 +2525,19 @@ Return only raw JSON.`;
     }
   }
 
-  function renderSpots(spots) {
-    _plannerSpots = spots;
+  function renderSpots(spots, append = false) {
+    // When appending (from "More Activities"), use the highest existing index as offset
+    const existingCards = document.querySelectorAll('[id^="spotCard"]').length;
+    const startIdx = append ? existingCards : 0;
+
+    if (!append) _plannerSpots = spots;
+    else _plannerSpots = _plannerSpots.concat(spots);
+
     const grid = document.getElementById('spotsGrid');
-    grid.innerHTML = spots.map((s, i) => `
-      <div class="spot-card" id="spotCard${i}" onclick="toggleSpot(${i})">
+    const html = spots.map((s, i) => {
+      const cardIdx = startIdx + i;
+      return `
+      <div class="spot-card" id="spotCard${cardIdx}" onclick="toggleSpot(${cardIdx})">
         <img src="${s.image_url || ''}" alt="${s.name}" class="spot-card-img"
              onerror="this.style.display='none'" />
         <div class="spot-card-body">
@@ -2540,9 +2548,16 @@ Return only raw JSON.`;
             <span>⏱ ${s.duration || ''}</span>
             <span>🕐 ${s.best_time || ''}</span>
           </div>
-          <button class="spot-card-select-btn" id="spotBtn${i}">+ Add to Trip</button>
+          <button class="spot-card-select-btn" id="spotBtn${cardIdx}">+ Add to Trip</button>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
+
+    if (append) {
+      grid.innerHTML += html;
+    } else {
+      grid.innerHTML = html;
+    }
     document.getElementById('generateBar').classList.add('visible');
   }
 
@@ -2656,6 +2671,7 @@ Return only raw JSON.`;
           <button class="spot-card-select-btn" id="restBtn${i}">+ Add to Trip</button>
         </div>
       </div>`).join('');
+    document.getElementById('generateBar2').classList.add('visible');
     document.getElementById('generateBtn2').disabled = false;
   }
 
@@ -2712,7 +2728,7 @@ Return only raw JSON.`;
       const text = extractText(data, provider);
       const json = parseAIJson(text);
       document.getElementById('plannerLoading').classList.remove('visible');
-      renderSpots(json.spots || []);
+      renderSpots(json.spots || [], true);
     } catch (err) {
       document.getElementById('plannerLoading').classList.remove('visible');
       document.getElementById('spotsGrid').innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#991b1b">⚠️ Error: ${err.message}</div>`;
@@ -2725,16 +2741,9 @@ Return only raw JSON.`;
     const dest     = _selD?.destination || 'the destination';
     const existingRest = _plannerRestaurants.map(r => r.name).join(', ');
 
-    _selectedRestaurants = new Set();
     document.getElementById('plannerTitle').textContent = '🗺️ Plan Your Trip to ' + dest;
-    document.getElementById('restaurantsGrid').innerHTML = '';
-    document.getElementById('generateBtn2').disabled = false;
     document.getElementById('plannerLoading').classList.add('visible');
     document.getElementById('plannerPanel').classList.add('visible');
-    document.getElementById('attractionsPhase').style.display = 'none';
-    document.getElementById('restaurantsPhase').style.display = 'block';
-    document.getElementById('itineraryPhase').style.display = 'none';
-    document.getElementById('plannerPanel').scrollTop = 0;
 
     const prompt = `You are a food expert. List 15 DIFFERENT (not listed below) popular restaurants in ${dest}.
 Do NOT include: ${existingRest}
@@ -2761,11 +2770,37 @@ Return only raw JSON.`;
       const text = extractText(data, provider);
       const json = parseAIJson(text);
       document.getElementById('plannerLoading').classList.remove('visible');
-      renderRestaurants(json.restaurants || []);
+      renderMoreRestaurants(json.restaurants || []);
     } catch (err) {
       document.getElementById('plannerLoading').classList.remove('visible');
-      document.getElementById('restaurantsGrid').innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#991b1b">⚠️ Error: ${err.message}</div>`;
+      document.getElementById('restaurantsGrid').innerHTML += `<div style="grid-column:1/-1;text-align:center;color:#991b1b">⚠️ Error: ${err.message}</div>`;
     }
+  }
+
+  function renderMoreRestaurants(restaurants) {
+    const grid = document.getElementById('restaurantsGrid');
+    const existingCards = document.querySelectorAll('[id^="restCard"]').length;
+
+    _plannerRestaurants = _plannerRestaurants.concat(restaurants);
+    const html = restaurants.map((r, i) => {
+      const cardIdx = existingCards + i;
+      return `
+      <div class="spot-card" id="restCard${cardIdx}" onclick="toggleRestaurant(${cardIdx})">
+        <img src="${r.image_url || ''}" alt="${r.name}" class="spot-card-img"
+             onerror="this.style.display='none'" />
+        <div class="spot-card-body">
+          <span class="spot-card-category">${r.cuisine || 'Restaurant'}</span>
+          <div class="spot-card-name">${r.name}</div>
+          <div class="spot-card-desc">${r.description || ''}</div>
+          <div class="spot-card-meta">
+            <span>${r.price_range || ''}</span>
+            <span>🍽️ ${r.meal_type || ''}</span>
+          </div>
+          <button class="spot-card-select-btn" id="restBtn${cardIdx}">+ Add to Trip</button>
+        </div>
+      </div>`;
+    }).join('');
+    grid.innerHTML += html;
   }
 
   async function generateItinerary() {
