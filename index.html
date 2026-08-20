@@ -1609,8 +1609,8 @@
 
   function buildRequestBody(prompt, provider) {
     if (provider === 'gemini') return JSON.stringify({ prompt });
-    if (provider === 'openai') return JSON.stringify({ model: 'gpt-4o', max_tokens: 8000, messages: [{ role: 'user', content: prompt }] });
-    return JSON.stringify({ model: 'claude-opus-4-6', max_tokens: 8000, messages: [{ role: 'user', content: prompt }] });
+    if (provider === 'openai') return JSON.stringify({ model: 'gpt-4o', max_tokens: 12000, messages: [{ role: 'user', content: prompt }] });
+    return JSON.stringify({ model: 'claude-opus-4-6', max_tokens: 12000, messages: [{ role: 'user', content: prompt }] });
   }
 
   function extractText(data, provider) {
@@ -2887,6 +2887,7 @@ Return ONLY valid raw JSON (no markdown, no explanation):
       "price_range": "$$$",
       "description": "Short description of the restaurant.",
       "meal_type": "Dinner",
+      "popular_menu": "Pasta Carbonara, Risotto, Tiramisu",
       "image_url": "https://images.unsplash.com/photo-XXXXXXXXX?w=600&h=400&fit=crop",
       "image_urls": [
         "https://images.unsplash.com/photo-YYYYYYYYY?w=120&h=80&fit=crop",
@@ -2903,8 +2904,9 @@ Requirements:
 - Vary cuisines: Italian, Japanese, Local, French, Asian Fusion, Indian, Mediterranean, Seafood, Vegetarian, Street Food, etc.
 - price_range: $, $$, $$$, or $$$$
 - meal_type: Breakfast, Lunch, or Dinner (mix them)
-- image_url: main realistic Unsplash food/restaurant photo (format: https://images.unsplash.com/photo-XXXXXXXXXX?w=600&h=400&fit=crop)
-- image_urls: array of 3-4 different high-quality photos of the restaurant interior/dishes/exterior (format: https://images.unsplash.com/photo-XXXXXXXXXX?w=120&h=80&fit=crop)
+- popular_menu: list 3-4 of the restaurant's most famous dishes (e.g., "Pasta Carbonara, Tiramisu, Espresso")
+- image_url: main realistic Unsplash food/restaurant photo (e.g., https://images.unsplash.com/photo-1504674900152-fd01b4cb7547?w=600&h=400&fit=crop)
+- image_urls: array of 3-4 different high-quality photos of the restaurant interior/dishes/exterior (e.g., https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=120&h=80&fit=crop)
 - description: 1 sentence, specific
 Return only raw JSON.`;
 
@@ -2949,7 +2951,7 @@ Return only raw JSON.`;
       <div class="spot-card" id="restCard${i}" onclick="toggleRestaurant(${i})">
         <img src="${r.image_url || ''}" alt="${r.name}" class="spot-card-img"
              onerror="this.style.display='none'" />
-        ${imageUrls.length > 1 ? `
+        ${imageUrls.length > 0 ? `
         <div class="image-gallery" style="padding:6px;border-bottom:1px solid var(--gray-100)">
           ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${url}" alt="Photo ${idx + 1}" onerror="this.style.display='none'" /></div>`).join('')}
         </div>
@@ -2958,6 +2960,7 @@ Return only raw JSON.`;
           <span class="spot-card-category">${r.cuisine || 'Restaurant'}</span>
           <div class="spot-card-name">${r.name}</div>
           <div class="spot-card-desc">${r.description || ''}</div>
+          ${r.popular_menu ? `<div style="font-size:11px;color:var(--orange);margin-top:6px;font-weight:600">🍜 ${r.popular_menu}</div>` : ''}
           <div class="spot-card-meta">
             <span>${r.price_range || ''}</span>
             <span>🍽️ ${r.meal_type || ''}</span>
@@ -2982,6 +2985,12 @@ Return only raw JSON.`;
     const sel  = _selectedRestaurants.has(i);
     card.classList.toggle('selected', sel);
     btn.textContent = sel ? '✓ Added' : '+ Add to Trip';
+
+    const count = _selectedRestaurants.size;
+    const counter = document.getElementById('plannerCounter');
+    counter.style.display = count > 0 ? '' : 'none';
+    counter.textContent = count + ' restaurant' + (count !== 1 ? 's' : '') + ' selected';
+    document.getElementById('generateBtn2').disabled = count === 0;
   }
 
   async function fetchMoreAttractions() {
@@ -3105,14 +3114,21 @@ Return only raw JSON.`;
     _plannerRestaurants = _plannerRestaurants.concat(restaurants);
     const html = restaurants.map((r, i) => {
       const cardIdx = existingCards + i;
+      const imageUrls = r.image_urls || (r.image_url ? [r.image_url] : []);
       return `
       <div class="spot-card" id="restCard${cardIdx}" onclick="toggleRestaurant(${cardIdx})">
         <img src="${r.image_url || ''}" alt="${r.name}" class="spot-card-img"
              onerror="this.style.display='none'" />
+        ${imageUrls.length > 0 ? `
+        <div class="image-gallery" style="padding:6px;border-bottom:1px solid var(--gray-100)">
+          ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${url}" alt="Photo ${idx + 1}" onerror="this.style.display='none'" /></div>`).join('')}
+        </div>
+        ` : ''}
         <div class="spot-card-body">
           <span class="spot-card-category">${r.cuisine || 'Restaurant'}</span>
           <div class="spot-card-name">${r.name}</div>
           <div class="spot-card-desc">${r.description || ''}</div>
+          ${r.popular_menu ? `<div style="font-size:11px;color:var(--orange);margin-top:6px;font-weight:600">🍜 ${r.popular_menu}</div>` : ''}
           <div class="spot-card-meta">
             <span>${r.price_range || ''}</span>
             <span>🍽️ ${r.meal_type || ''}</span>
@@ -3277,15 +3293,15 @@ Return only raw JSON.`;
 
       <!-- Booking & Prep Section -->
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:24px">
-        <button onclick="${obBookUrl && obBookUrl !== '#' ? `window.open('${obBookUrl}', '_blank')` : 'alert("Flight booking URL not available")'}" style="display:block;padding:16px;background:linear-gradient(135deg,#f97316,#ea580c);color:white;border:none;border-radius:8px;text-align:center;font-weight:600;cursor:pointer;transition:transform .2s;font-size:16px">
+        <a href="${obBookUrl}" target="_blank" rel="noopener" style="display:block;padding:16px;background:linear-gradient(135deg,#f97316,#ea580c);color:white;text-decoration:none;border-radius:8px;text-align:center;font-weight:600;cursor:pointer;transition:transform .2s;font-size:16px">
           ✈️ Book Outbound Flight
-        </button>
-        <button onclick="${retBookUrl && retBookUrl !== '#' ? `window.open('${retBookUrl}', '_blank')` : 'alert("Flight booking URL not available")'}" style="display:block;padding:16px;background:linear-gradient(135deg,#f97316,#ea580c);color:white;border:none;border-radius:8px;text-align:center;font-weight:600;cursor:pointer;transition:transform .2s;font-size:16px">
+        </a>
+        <a href="${retBookUrl}" target="_blank" rel="noopener" style="display:block;padding:16px;background:linear-gradient(135deg,#f97316,#ea580c);color:white;text-decoration:none;border-radius:8px;text-align:center;font-weight:600;cursor:pointer;transition:transform .2s;font-size:16px">
           ✈️ Book Return Flight
-        </button>
-        <button onclick="${hotelBookUrl && hotelBookUrl !== '#' ? `window.open('${hotelBookUrl}', '_blank')` : 'alert("Hotel booking URL not available")'}" style="display:block;padding:16px;background:linear-gradient(135deg,#ec4899,#be185d);color:white;border:none;border-radius:8px;text-align:center;font-weight:600;cursor:pointer;transition:transform .2s;font-size:16px">
+        </a>
+        <a href="${hotelBookUrl}" target="_blank" rel="noopener" style="display:block;padding:16px;background:linear-gradient(135deg,#ec4899,#be185d);color:white;text-decoration:none;border-radius:8px;text-align:center;font-weight:600;cursor:pointer;transition:transform .2s;font-size:16px">
           🏨 Book Hotel
-        </button>
+        </a>
       </div>
 
       <!-- Itinerary Days -->
@@ -3371,13 +3387,30 @@ Return only raw JSON.`;
       selectedRestaurants: Array.from(_selectedRestaurants).map(i => _plannerRestaurants[i]?.name || ''),
       itinerary: itineraryDiv.innerText
     };
-    const element = document.createElement('a');
-    element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(json, null, 2)));
-    element.setAttribute('download', 'trip-itinerary.json');
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+
+    try {
+      // Try Blob API (better mobile support)
+      const blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const element = document.createElement('a');
+      element.setAttribute('href', url);
+      element.setAttribute('download', 'trip-itinerary.json');
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      // Fallback to data URL for older browsers
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(json, null, 2)));
+      element.setAttribute('download', 'trip-itinerary.json');
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    }
+
     closeExportPreview();
   }
 
