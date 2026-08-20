@@ -937,8 +937,12 @@
       text-align: center;
       margin-top: 8px;
       margin-bottom: 24px;
+      flex-direction: row;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
     }
-    .generate-bar.visible { display: block; }
+    .generate-bar.visible { display: flex; }
     .generate-btn {
       display: inline-flex;
       align-items: center;
@@ -1053,23 +1057,6 @@
       height: 100%;
       object-fit: cover;
       background: var(--gray-200);
-    }
-    .gallery-thumb::before {
-      content: '📷';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 32px;
-      background: var(--gray-100);
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .gallery-thumb img:not([style*="display: none"]) ~ ::before {
-      display: none;
     }
     .export-preview-modal {
       display: none;
@@ -1504,12 +1491,12 @@
       <!-- Attractions Selection -->
       <div id="attractionsPhase">
         <div class="spots-grid" id="spotsGrid"></div>
-        <div class="generate-bar" id="generateBar">
-          <button class="generate-btn" id="generateBtn" onclick="fetchRestaurants()" disabled style="margin-right:8px">
-            ✨ Continue to Restaurants
-          </button>
-          <button class="generate-btn" id="moreActivitiesBtn" onclick="fetchMoreAttractions()" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); box-shadow: 0 4px 20px rgba(5,150,137,.4)">
+        <div class="generate-bar" id="generateBar" style="flex-direction:column;gap:12px">
+          <button class="generate-btn" id="moreActivitiesBtn" onclick="fetchMoreAttractions()" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); box-shadow: 0 4px 20px rgba(5,150,137,.4);width:100%">
             🎯 + More Activities
+          </button>
+          <button class="generate-btn" id="generateBtn" onclick="fetchRestaurants()" disabled style="width:100%">
+            ✨ Continue to Restaurants
           </button>
         </div>
       </div>
@@ -1521,13 +1508,16 @@
           <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px">Choose restaurants for dining throughout your trip</p>
         </div>
         <div class="spots-grid" id="restaurantsGrid"></div>
-        <div class="generate-bar" id="generateBar2">
-          <button class="generate-btn" id="moreRestaurantsBtn" onclick="fetchMoreRestaurants()" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); box-shadow: 0 4px 20px rgba(220,38,38,.4)">
+        <div class="generate-bar" id="generateBar2" style="flex-direction:column;gap:12px">
+          <button class="generate-btn" id="moreRestaurantsBtn" onclick="fetchMoreRestaurants()" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); box-shadow: 0 4px 20px rgba(220,38,38,.4);width:100%">
             🍽️ + More Restaurants
           </button>
+          <button class="generate-btn" id="generateBtn2" onclick="generateItinerary()" disabled style="width:100%">
+            ✨ Generate My Itinerary
+          </button>
         </div>
-        <div class="generate-bar" id="generateBarFinal" style="position:fixed;bottom:32px;left:50%;transform:translateX(-50%);width:auto;margin:0;z-index:501">
-          <button class="generate-btn" id="generateBtn2" onclick="generateItinerary()" disabled style="padding:14px 28px;font-size:15px;font-weight:700">
+        <div class="generate-bar" id="generateBarFinal" style="position:fixed;bottom:32px;left:50%;transform:translateX(-50%);width:auto;margin:0;z-index:501;display:none">
+          <button class="generate-btn" id="generateBtn2Final" onclick="generateItinerary()" disabled style="padding:14px 28px;font-size:15px;font-weight:700;display:none">
             ✨ Generate My Itinerary
           </button>
         </div>
@@ -2281,8 +2271,8 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
               <div class="hotel-amenities">
                 ${(h.amenities||[]).map(a => `<span class="amenity">${a}</span>`).join('')}
               </div>
-              ${h.room_capacity ? `<div style="font-size:12px;color:var(--gray-600);margin-top:8px">👥 ${h.room_capacity}</div>` : ''}
-              ${h.bathroom ? `<div style="font-size:12px;color:var(--gray-600);margin-top:4px">🚿 ${h.bathroom}</div>` : ''}
+              <div style="font-size:12px;color:var(--gray-600);margin-top:8px">👥 ${h.room_capacity || '2 guests'}</div>
+              <div style="font-size:12px;color:var(--gray-600);margin-top:4px">🚿 ${h.bathroom || 'Private bathroom'}</div>
               <div class="flight-badges" style="margin-top:8px">
                 ${(h.highlights||[]).map(hl => `<span class="badge blue">${hl}</span>`).join('')}
               </div>
@@ -3287,15 +3277,15 @@ Return only raw JSON.`;
 
       <!-- Booking & Prep Section -->
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:24px">
-        <a href="${obBookUrl}" target="_blank" style="display:block;padding:16px;background:linear-gradient(135deg,#f97316,#ea580c);color:white;text-decoration:none;border-radius:8px;text-align:center;font-weight:600;transition:transform .2s">
+        <button onclick="${obBookUrl && obBookUrl !== '#' ? `window.open('${obBookUrl}', '_blank')` : 'alert("Flight booking URL not available")'}" style="display:block;padding:16px;background:linear-gradient(135deg,#f97316,#ea580c);color:white;border:none;border-radius:8px;text-align:center;font-weight:600;cursor:pointer;transition:transform .2s;font-size:16px">
           ✈️ Book Outbound Flight
-        </a>
-        <a href="${retBookUrl}" target="_blank" style="display:block;padding:16px;background:linear-gradient(135deg,#f97316,#ea580c);color:white;text-decoration:none;border-radius:8px;text-align:center;font-weight:600;transition:transform .2s">
+        </button>
+        <button onclick="${retBookUrl && retBookUrl !== '#' ? `window.open('${retBookUrl}', '_blank')` : 'alert("Flight booking URL not available")'}" style="display:block;padding:16px;background:linear-gradient(135deg,#f97316,#ea580c);color:white;border:none;border-radius:8px;text-align:center;font-weight:600;cursor:pointer;transition:transform .2s;font-size:16px">
           ✈️ Book Return Flight
-        </a>
-        <a href="${hotelBookUrl}" target="_blank" style="display:block;padding:16px;background:linear-gradient(135deg,#ec4899,#be185d);color:white;text-decoration:none;border-radius:8px;text-align:center;font-weight:600;transition:transform .2s">
+        </button>
+        <button onclick="${hotelBookUrl && hotelBookUrl !== '#' ? `window.open('${hotelBookUrl}', '_blank')` : 'alert("Hotel booking URL not available")'}" style="display:block;padding:16px;background:linear-gradient(135deg,#ec4899,#be185d);color:white;border:none;border-radius:8px;text-align:center;font-weight:600;cursor:pointer;transition:transform .2s;font-size:16px">
           🏨 Book Hotel
-        </a>
+        </button>
       </div>
 
       <!-- Itinerary Days -->
