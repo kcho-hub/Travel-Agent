@@ -908,7 +908,7 @@
     .spot-card-meta { display: flex; gap: 8px; flex-wrap: wrap; font-size: 11px; color: var(--gray-400); margin-bottom: 10px; }
     .spot-card-select-btn {
       width: 100%;
-      padding: 7px;
+      padding: 8px 6px;
       border-radius: var(--radius-sm);
       border: 1.5px solid var(--blue);
       background: white;
@@ -918,6 +918,15 @@
       font-family: 'Inter', sans-serif;
       cursor: pointer;
       transition: all .15s;
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      line-height: 1.2;
+      min-height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .spot-card-select-btn:hover { background: var(--blue-light); }
     .spot-card.selected .spot-card-select-btn { background: var(--blue); color: white; }
@@ -1610,8 +1619,8 @@
 
   function buildRequestBody(prompt, provider) {
     if (provider === 'gemini') return JSON.stringify({ prompt });
-    if (provider === 'openai') return JSON.stringify({ model: 'gpt-4o', max_tokens: 6000, messages: [{ role: 'user', content: prompt }] });
-    return JSON.stringify({ model: 'claude-opus-4-6', max_tokens: 6000, messages: [{ role: 'user', content: prompt }] });
+    if (provider === 'openai') return JSON.stringify({ model: 'gpt-4o', max_tokens: 8000, messages: [{ role: 'user', content: prompt }] });
+    return JSON.stringify({ model: 'claude-opus-4-6', max_tokens: 8000, messages: [{ role: 'user', content: prompt }] });
   }
 
   function extractText(data, provider) {
@@ -1628,12 +1637,21 @@
     try { return JSON.parse(fenced); } catch(_) {}
     // 3. Extract the first { ... } block (handles preamble/trailing text)
     const objMatch = text.match(/\{[\s\S]*\}/);
-    if (objMatch) { try { return JSON.parse(objMatch[0]); } catch(_) {} }
+    if (objMatch) {
+      try { return JSON.parse(objMatch[0]); } catch(_) {}
+      // If extracted JSON is almost valid, try fixing common truncation patterns
+      const extracted = objMatch[0];
+      const fixedJson = extracted
+        .replace(/,(\s*[}\]])/, '$1')  // Remove trailing commas before closing brackets
+        .replace(/}\s*$/, '}}')         // Add missing closing bracket if needed
+        .replace(/]\s*$/, ']]');        // Add missing closing bracket if array
+      try { return JSON.parse(fixedJson); } catch(_) {}
+    }
     // 4. Diagnose and surface a helpful error
-    const isTruncated = !text.trimEnd().endsWith('}');
+    const isTruncated = !text.trimEnd().match(/[\}\]]$/);
     console.error('Unparseable AI response:', text);
     if (isTruncated) {
-      throw new Error('The AI response was cut off before it finished. Try again — if it keeps happening, switch to Claude which supports longer outputs.');
+      throw new Error('The AI response was cut off before it finished. Trying with increased token limit. Please search again.');
     }
     const start = text.slice(0, 120);
     const end   = text.slice(-80);
