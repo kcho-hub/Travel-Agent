@@ -1043,6 +1043,24 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      background: var(--gray-200);
+    }
+    .gallery-thumb::before {
+      content: '📷';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 32px;
+      background: var(--gray-100);
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .gallery-thumb img:not([style*="display: none"]) ~ ::before {
+      display: none;
     }
     .export-preview-modal {
       display: none;
@@ -1133,6 +1151,33 @@
     }
     .export-btn-secondary:hover {
       background: var(--gray-200);
+    }
+
+    /* ─── LOADING ANIMATION ─── */
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .btn-loading {
+      position: relative;
+      color: transparent !important;
+    }
+    .btn-loading::after {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      top: 50%;
+      left: 50%;
+      margin: -7px 0 0 -7px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
     }
   </style>
 </head>
@@ -1723,6 +1768,8 @@ Return ONLY valid raw JSON (no markdown, no explanation) using this exact struct
         "https://images.unsplash.com/photo-1584132604428-5520b897e298?w=120&h=80&fit=crop",
         "https://images.unsplash.com/photo-1618164436241-92473af239dd?w=120&h=80&fit=crop"
       ],
+      "room_capacity": "2 guests",
+      "bathroom": "Private bathroom with shower, hairdryer",
       "flexible_dest": ""
     }
   ]
@@ -2008,6 +2055,8 @@ Return ONLY a valid JSON object (no markdown fences, no explanation, just raw JS
         "https://images.unsplash.com/photo-1584132604428-5520b897e298?w=120&h=80&fit=crop",
         "https://images.unsplash.com/photo-1618164436241-92473af239dd?w=120&h=80&fit=crop"
       ],
+      "room_capacity": "2 guests",
+      "bathroom": "Private bathroom with shower, hairdryer",
       "flexible_dest": ""
     }
   ],
@@ -2020,6 +2069,8 @@ You MUST provide exactly 6 hotel options — never fewer. Vary:
 - Brands: use a mix of chains and independent/boutique hotels
 - image_url: main hotel room/lobby photo (https://images.unsplash.com/photo-XXXXXXXXXX?w=400&h=300&fit=crop)
 - image_urls: array of 3-4 different room/amenity/exterior photos (https://images.unsplash.com/photo-XXXXXXXXXX?w=120&h=80&fit=crop)
+- room_capacity: number of guests this room sleeps (e.g., "1-2 guests", "4 guests")
+- bathroom: bathroom amenities (e.g., "Private bathroom with shower, bathtub, hairdryer", "Shared bathroom")
 Make all prices realistic for ${d.destination}. Return only raw JSON.`;
 
     try {
@@ -2189,6 +2240,7 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
     (data.hotels || []).forEach((h, i) => {
       const isFirst = i === 0;
       const stars = '★'.repeat(Math.min(5, h.stars||4)) + '☆'.repeat(Math.max(0, 5-(h.stars||4)));
+      const imageUrls = h.image_urls || (h.image_url ? [h.image_url] : []);
       hotelsList.innerHTML += `
         <div class="option-card ${isFirst ? 'best-value' : ''} fade-in" style="animation-delay:${0.1+i*0.08}s">
           ${isFirst ? '<div class="best-tag">Best Value</div>' : ''}
@@ -2203,9 +2255,16 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
                 <div class="hotel-location">📍 ${h.location}${h.distance_from_center ? ' · '+h.distance_from_center : ''}</div>
               </div>
               ${h.flexible_dest ? `<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:4px">📍 Nearby: ${h.flexible_dest}</div>` : ''}
+              ${imageUrls.length > 1 ? `
+              <div class="image-gallery" style="padding:8px 0;margin:8px 0;border-top:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100)">
+                ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${url}" alt="Photo ${idx + 1}" onerror="this.style.display='none'" /></div>`).join('')}
+              </div>
+              ` : ''}
               <div class="hotel-amenities">
                 ${(h.amenities||[]).map(a => `<span class="amenity">${a}</span>`).join('')}
               </div>
+              ${h.room_capacity ? `<div style="font-size:12px;color:var(--gray-600);margin-top:8px">👥 ${h.room_capacity}</div>` : ''}
+              ${h.bathroom ? `<div style="font-size:12px;color:var(--gray-600);margin-top:4px">🚿 ${h.bathroom}</div>` : ''}
               <div class="flight-badges" style="margin-top:8px">
                 ${(h.highlights||[]).map(hl => `<span class="badge blue">${hl}</span>`).join('')}
               </div>
@@ -2900,6 +2959,7 @@ Return only raw JSON.`;
       </div>`;
     }).join('');
     document.getElementById('generateBar2').classList.add('visible');
+    document.getElementById('generateBarFinal').style.display = 'block';
     document.getElementById('generateBtn2').disabled = false;
   }
 
@@ -2921,6 +2981,13 @@ Return only raw JSON.`;
     const provider = getProvider();
     const dest     = _selD?.destination || 'the destination';
     const existingSpots = _plannerSpots.map(s => s.name).join(', ');
+
+    const btn = document.getElementById('moreActivitiesBtn');
+    const origText = btn?.textContent;
+    if (btn) {
+      btn.disabled = true;
+      btn.classList.add('btn-loading');
+    }
 
     document.getElementById('plannerTitle').textContent = '🗺️ Plan Your Trip to ' + dest;
     document.getElementById('plannerLoading').classList.add('visible');
@@ -2956,6 +3023,13 @@ Return only raw JSON.`;
     } catch (err) {
       document.getElementById('plannerLoading').classList.remove('visible');
       document.getElementById('spotsGrid').innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#991b1b">⚠️ Error: ${err.message}</div>`;
+    } finally {
+      const btn = document.getElementById('moreActivitiesBtn');
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove('btn-loading');
+        btn.textContent = '🎯 + More Activities';
+      }
     }
   }
 
@@ -2964,6 +3038,13 @@ Return only raw JSON.`;
     const provider = getProvider();
     const dest     = _selD?.destination || 'the destination';
     const existingRest = _plannerRestaurants.map(r => r.name).join(', ');
+
+    const btn = document.getElementById('moreRestaurantsBtn');
+    const origText = btn?.textContent;
+    if (btn) {
+      btn.disabled = true;
+      btn.classList.add('btn-loading');
+    }
 
     document.getElementById('plannerTitle').textContent = '🗺️ Plan Your Trip to ' + dest;
     document.getElementById('plannerLoading').classList.add('visible');
@@ -2999,6 +3080,13 @@ Return only raw JSON.`;
     } catch (err) {
       document.getElementById('plannerLoading').classList.remove('visible');
       document.getElementById('restaurantsGrid').innerHTML += `<div style="grid-column:1/-1;text-align:center;color:#991b1b">⚠️ Error: ${err.message}</div>`;
+    } finally {
+      const btn = document.getElementById('moreRestaurantsBtn');
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove('btn-loading');
+        btn.textContent = '🍽️ + More Restaurants';
+      }
     }
   }
 
