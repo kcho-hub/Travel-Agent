@@ -1718,6 +1718,11 @@ Return ONLY valid raw JSON (no markdown, no explanation) using this exact struct
       "rating": 4.5,
       "highlights": ["Great location"],
       "image_url": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400&h=300&fit=crop",
+      "image_urls": [
+        "https://images.unsplash.com/photo-1611894372121-98a5e56ff6bf?w=120&h=80&fit=crop",
+        "https://images.unsplash.com/photo-1584132604428-5520b897e298?w=120&h=80&fit=crop",
+        "https://images.unsplash.com/photo-1618164436241-92473af239dd?w=120&h=80&fit=crop"
+      ],
       "flexible_dest": ""
     }
   ]
@@ -1997,6 +2002,12 @@ Return ONLY a valid JSON object (no markdown fences, no explanation, just raw JS
       "amenities": ["Free WiFi", "Pool", "Gym", "Breakfast"],
       "rating": 4.6,
       "highlights": ["Rooftop pool with city views", "Walking distance to attractions"],
+      "image_url": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400&h=300&fit=crop",
+      "image_urls": [
+        "https://images.unsplash.com/photo-1611894372121-98a5e56ff6bf?w=120&h=80&fit=crop",
+        "https://images.unsplash.com/photo-1584132604428-5520b897e298?w=120&h=80&fit=crop",
+        "https://images.unsplash.com/photo-1618164436241-92473af239dd?w=120&h=80&fit=crop"
+      ],
       "flexible_dest": ""
     }
   ],
@@ -2007,6 +2018,8 @@ You MUST provide exactly 6 hotel options — never fewer. Vary:
 - Price range: budget (~$80–120/night), mid-range (~$150–220/night), and luxury ($250+/night)
 - Location: different neighbourhoods or distances from city centre
 - Brands: use a mix of chains and independent/boutique hotels
+- image_url: main hotel room/lobby photo (https://images.unsplash.com/photo-XXXXXXXXXX?w=400&h=300&fit=crop)
+- image_urls: array of 3-4 different room/amenity/exterior photos (https://images.unsplash.com/photo-XXXXXXXXXX?w=120&h=80&fit=crop)
 Make all prices realistic for ${d.destination}. Return only raw JSON.`;
 
     try {
@@ -2668,6 +2681,11 @@ Return ONLY valid raw JSON (no markdown, no explanation):
       "duration": "2–3 hours",
       "best_time": "Morning",
       "image_url": "https://images.unsplash.com/photo-XXXXXXXXX?w=600&h=400&fit=crop",
+      "image_urls": [
+        "https://images.unsplash.com/photo-YYYYYYYYY?w=120&h=80&fit=crop",
+        "https://images.unsplash.com/photo-ZZZZZZZ?w=120&h=80&fit=crop",
+        "https://images.unsplash.com/photo-AAAAAAA?w=120&h=80&fit=crop"
+      ],
       "tags": ["iconic", "views"]
     }
   ]
@@ -2676,7 +2694,8 @@ Return ONLY valid raw JSON (no markdown, no explanation):
 Requirements:
 - Exactly 10 spots
 - Vary categories: Landmark, Museum, Nature, Food, Nightlife, Shopping, Adventure, Culture, Beach, Art
-- image_url: realistic Unsplash photo (format: https://images.unsplash.com/photo-XXXXXXXXXX?w=600&h=400&fit=crop)
+- image_url: main realistic Unsplash photo (format: https://images.unsplash.com/photo-XXXXXXXXXX?w=600&h=400&fit=crop)
+- image_urls: array of 3-4 different high-quality Unsplash photos of the spot (format: https://images.unsplash.com/photo-XXXXXXXXXX?w=120&h=80&fit=crop)
 - description: 1–2 sentences, specific
 - duration: realistic visit duration
 - best_time: Morning / Afternoon / Evening / Any
@@ -2802,6 +2821,11 @@ Return ONLY valid raw JSON (no markdown, no explanation):
       "description": "Short description of the restaurant.",
       "meal_type": "Dinner",
       "image_url": "https://images.unsplash.com/photo-XXXXXXXXX?w=600&h=400&fit=crop",
+      "image_urls": [
+        "https://images.unsplash.com/photo-YYYYYYYYY?w=120&h=80&fit=crop",
+        "https://images.unsplash.com/photo-ZZZZZZZ?w=120&h=80&fit=crop",
+        "https://images.unsplash.com/photo-AAAAAAA?w=120&h=80&fit=crop"
+      ],
       "tags": ["romantic", "fine-dining"]
     }
   ]
@@ -2812,7 +2836,8 @@ Requirements:
 - Vary cuisines: Italian, Japanese, Local, French, Asian Fusion, Indian, Mediterranean, Seafood, Vegetarian, Street Food, etc.
 - price_range: $, $$, $$$, or $$$$
 - meal_type: Breakfast, Lunch, or Dinner (mix them)
-- image_url: realistic Unsplash food/restaurant photo (format: https://images.unsplash.com/photo-XXXXXXXXXX?w=600&h=400&fit=crop)
+- image_url: main realistic Unsplash food/restaurant photo (format: https://images.unsplash.com/photo-XXXXXXXXXX?w=600&h=400&fit=crop)
+- image_urls: array of 3-4 different high-quality photos of the restaurant interior/dishes/exterior (format: https://images.unsplash.com/photo-XXXXXXXXXX?w=120&h=80&fit=crop)
 - description: 1 sentence, specific
 Return only raw JSON.`;
 
@@ -2905,11 +2930,15 @@ Do NOT include: ${existingSpots}
 Return ONLY valid raw JSON (no markdown, no explanation):
 {
   "spots": [
-    {"name": "","category": "","description": "","duration": "","best_time": "","image_url": "","tags": []}
+    {"name": "","category": "","description": "","duration": "","best_time": "","image_url": "","image_urls": ["","",""],"tags": []}
   ]
 }
 Requirements:
-- Exactly 10 unique spots NOT already listed- Vary categories- image_url: realistic Unsplash photo- description: 1–2 sentences
+- Exactly 10 unique spots NOT already listed
+- Vary categories
+- image_url: realistic Unsplash photo (https://images.unsplash.com/photo-XXXXXXXXXX?w=600&h=400&fit=crop)
+- image_urls: array of 3-4 different high-quality photos (https://images.unsplash.com/photo-XXXXXXXXXX?w=120&h=80&fit=crop)
+- description: 1–2 sentences
 Return only raw JSON.`;
 
     try {
@@ -2945,13 +2974,14 @@ Do NOT include: ${existingRest}
 Return ONLY valid raw JSON (no markdown, no explanation):
 {
   "restaurants": [
-    {"name": "","cuisine": "","price_range": "","description": "","meal_type": "","image_url": "","tags": []}
+    {"name": "","cuisine": "","price_range": "","description": "","meal_type": "","image_url": "","image_urls": ["","",""],"tags": []}
   ]
 }
 Requirements:
 - Exactly 15 unique restaurants NOT already listed
 - Vary cuisines and price ranges
-- image_url: realistic food/restaurant photo
+- image_url: realistic food/restaurant photo (https://images.unsplash.com/photo-XXXXXXXXXX?w=600&h=400&fit=crop)
+- image_urls: array of 3-4 different photos of the restaurant/food/interior (https://images.unsplash.com/photo-XXXXXXXXXX?w=120&h=80&fit=crop)
 Return only raw JSON.`;
 
     try {
