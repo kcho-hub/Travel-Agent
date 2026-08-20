@@ -1609,8 +1609,8 @@
 
   function buildRequestBody(prompt, provider) {
     if (provider === 'gemini') return JSON.stringify({ prompt });
-    if (provider === 'openai') return JSON.stringify({ model: 'gpt-4o', max_tokens: 12000, messages: [{ role: 'user', content: prompt }] });
-    return JSON.stringify({ model: 'claude-opus-4-6', max_tokens: 12000, messages: [{ role: 'user', content: prompt }] });
+    if (provider === 'openai') return JSON.stringify({ model: 'gpt-4o', max_tokens: 16000, messages: [{ role: 'user', content: prompt }] });
+    return JSON.stringify({ model: 'claude-opus-4-6', max_tokens: 16000, messages: [{ role: 'user', content: prompt }] });
   }
 
   function extractText(data, provider) {
@@ -2263,7 +2263,7 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
                 <div class="hotel-location">📍 ${h.location}${h.distance_from_center ? ' · '+h.distance_from_center : ''}</div>
               </div>
               ${h.flexible_dest ? `<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:4px">📍 Nearby: ${h.flexible_dest}</div>` : ''}
-              ${imageUrls.length > 1 ? `
+              ${imageUrls.length > 0 ? `
               <div class="image-gallery" style="padding:8px 0;margin:8px 0;border-top:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100)">
                 ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${url}" alt="Photo ${idx + 1}" onerror="this.style.display='none'" /></div>`).join('')}
               </div>
@@ -2642,15 +2642,32 @@ Vary prices and departure times.`;
     const existing = _selData.hotels || [];
     const skip     = existing.map(h => h.name).join(', ');
 
+    const budgetPerNight = parseBudgetPerNight(_selD.budget);
+    const preferredLocation = _selD.hotelLocation || 'any area';
+
     const prompt = `Return ONLY a valid JSON object, no markdown, no explanation:
 {"hotels":[]}
 
 Provide 8 more hotel options in ${_selD.destination} for ${_selD.travelers} guests, check-in ${_selD.depDate}, check-out ${_selD.retDate} (${_selNights} nights).
-Do NOT include these already-shown hotels: ${skip}
+STRICT CONSTRAINTS:
+- Budget per night: ${budgetPerNight}
+- Preferred location: ${preferredLocation}
+- Do NOT include these already-shown hotels: ${skip}
 
-Schema for each item: {"name":"","brand":"","stars":0,"rating":"","location":"","distance_from_center":"","amenities":[],"highlights":[],"price_per_night":0,"total_price":0,"image_url":""}
-For each hotel, provide a realistic Unsplash image URL of a luxury hotel room or lobby (e.g., https://images.unsplash.com/photo-XXXXXXXXX?w=400&h=300&fit=crop).
-Vary price ranges and neighbourhoods.`;
+Schema for each item: {
+  "name":"","brand":"","stars":0,"rating":"","location":"","distance_from_center":"",
+  "amenities":[],"highlights":[],"price_per_night":0,"total_price":0,
+  "image_url":"","image_urls":["","",""],
+  "room_capacity":"2 guests","bathroom":"Private bathroom"
+}
+Requirements:
+- STRICTLY respect budget per night limit
+- Focus on ${preferredLocation}
+- image_url: Unsplash photo with real ID (e.g., https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400&h=300&fit=crop)
+- image_urls: array of 3-4 different room/amenity photos
+- room_capacity: how many guests this room sleeps
+- bathroom: amenities in the bathroom
+Vary neighbourhoods but stick to budget and location.`;
 
     try {
       const apiKey   = document.getElementById('apiKey').value.trim();
@@ -2670,6 +2687,7 @@ Vary price ranges and neighbourhoods.`;
       newHotels.forEach((h, idx_offset) => {
         const idx   = startIdx + idx_offset;
         const stars = '★'.repeat(Math.min(5, h.stars||4)) + '☆'.repeat(Math.max(0, 5-(h.stars||4)));
+        const imageUrls = h.image_urls || (h.image_url ? [h.image_url] : []);
         list.innerHTML += `
           <div class="option-card fade-in">
             <div class="hotel-card-body">
@@ -2682,7 +2700,14 @@ Vary price ranges and neighbourhoods.`;
                   <div class="rating">${h.rating}</div>
                   <div class="hotel-location">📍 ${h.location}${h.distance_from_center?' · '+h.distance_from_center:''}</div>
                 </div>
+                ${imageUrls.length > 0 ? `
+                <div class="image-gallery" style="padding:8px 0;margin:8px 0;border-top:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100)">
+                  ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${url}" alt="Photo ${idx + 1}" onerror="this.style.display='none'" /></div>`).join('')}
+                </div>
+                ` : ''}
                 <div class="hotel-amenities">${(h.amenities||[]).map(a=>`<span class="amenity">${a}</span>`).join('')}</div>
+                <div style="font-size:12px;color:var(--gray-600);margin-top:8px">👥 ${h.room_capacity || '2 guests'}</div>
+                <div style="font-size:12px;color:var(--gray-600);margin-top:4px">🚿 ${h.bathroom || 'Private bathroom'}</div>
                 <div class="flight-badges" style="margin-top:8px">${(h.highlights||[]).map(hl=>`<span class="badge blue">${hl}</span>`).join('')}</div>
               </div>
               <div class="hotel-price">
