@@ -1609,8 +1609,8 @@
 
   function buildRequestBody(prompt, provider) {
     if (provider === 'gemini') return JSON.stringify({ prompt });
-    if (provider === 'openai') return JSON.stringify({ model: 'gpt-4o', max_tokens: 16000, messages: [{ role: 'user', content: prompt }] });
-    return JSON.stringify({ model: 'claude-opus-4-6', max_tokens: 16000, messages: [{ role: 'user', content: prompt }] });
+    if (provider === 'openai') return JSON.stringify({ model: 'gpt-4o', max_tokens: 20000, messages: [{ role: 'user', content: prompt }] });
+    return JSON.stringify({ model: 'claude-opus-4-6', max_tokens: 20000, messages: [{ role: 'user', content: prompt }] });
   }
 
   function extractText(data, provider) {
@@ -2413,6 +2413,7 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
     document.getElementById('hotelsList').innerHTML = '';
     (data.hotels || []).forEach((h, i) => {
       const stars = '★'.repeat(Math.min(5, h.stars||4)) + '☆'.repeat(Math.max(0, 5-(h.stars||4)));
+      const imageUrls = h.image_urls || (h.image_url ? [h.image_url] : []);
       document.getElementById('hotelsList').innerHTML += `
         <div class="option-card fade-in" style="animation-delay:${0.1+i*0.08}s">
           <div class="hotel-card-body">
@@ -2427,6 +2428,13 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
               </div>
               ${h.flexible_dest?`<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:4px">📍 Nearby: ${h.flexible_dest}</div>`:''}
               <div class="hotel-amenities">${(h.amenities||[]).map(a=>`<span class="amenity">${a}</span>`).join('')}</div>
+              ${imageUrls.length > 0 ? `
+              <div class="image-gallery" style="padding:8px 0;margin:8px 0;border-top:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100)">
+                ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${url}" alt="Photo ${idx + 1}" onerror="this.style.display='none'" /></div>`).join('')}
+              </div>
+              ` : ''}
+              <div style="font-size:12px;color:var(--gray-600);margin-top:8px">👥 ${h.room_capacity || '2 guests'}</div>
+              <div style="font-size:12px;color:var(--gray-600);margin-top:4px">🚿 ${h.bathroom || 'Private bathroom'}</div>
               <div class="flight-badges" style="margin-top:8px">${(h.highlights||[]).map(hl=>`<span class="badge blue">${hl}</span>`).join('')}</div>
             </div>
             <div class="hotel-price">
@@ -3097,12 +3105,13 @@ Do NOT include: ${existingRest}
 Return ONLY valid raw JSON (no markdown, no explanation):
 {
   "restaurants": [
-    {"name": "","cuisine": "","price_range": "","description": "","meal_type": "","image_url": "","image_urls": ["","",""],"tags": []}
+    {"name": "","cuisine": "","price_range": "","description": "","meal_type": "","popular_menu": "","image_url": "","image_urls": ["","",""],"tags": []}
   ]
 }
 Requirements:
 - Exactly 15 unique restaurants NOT already listed
 - Vary cuisines and price ranges
+- popular_menu: 1-2 signature/popular dishes or menu highlights (e.g., "Pad Thai, Green Curry")
 - image_url: realistic food/restaurant photo (https://images.unsplash.com/photo-XXXXXXXXXX?w=600&h=400&fit=crop)
 - image_urls: array of 3-4 different photos of the restaurant/food/interior (https://images.unsplash.com/photo-XXXXXXXXXX?w=120&h=80&fit=crop)
 Return only raw JSON.`;
@@ -3294,9 +3303,9 @@ Return only raw JSON.`;
     }
 
     // Build booking links from selected data
-    const obFlight = tripSel.ob ? tripSel.ob[0] : null;
-    const retFlight = tripSel.ret ? tripSel.ret[0] : null;
-    const hotel = tripSel.htl ? tripSel.htl[0] : null;
+    const obFlight = (tripSel.outbound !== null && _selData?.outbound_flights?.[tripSel.outbound]) || null;
+    const retFlight = (tripSel.ret !== null && _selData?.return_flights?.[tripSel.ret]) || null;
+    const hotel = (tripSel.hotel !== null && _selData?.hotels?.[tripSel.hotel]) || null;
 
     // Build Kayak & direct booking URLs
     const obBookUrl = obFlight && _selD ? buildFlightBookingUrl(obFlight, _selD, 'outbound') : '#';
@@ -3395,21 +3404,58 @@ Return only raw JSON.`;
 
   function downloadAsJSON() {
     const itineraryDiv = document.getElementById('itineraryOutput');
+    const obFlight = (tripSel.outbound !== null && _selData?.outbound_flights?.[tripSel.outbound]) || null;
+    const retFlight = (tripSel.ret !== null && _selData?.return_flights?.[tripSel.ret]) || null;
+    const hotel = (tripSel.hotel !== null && _selData?.hotels?.[tripSel.hotel]) || null;
+
     const json = {
       trip: {
         destination: _selD?.destination || 'Unknown',
-        depDate: _selData?.depDate || '',
-        retDate: _selData?.retDate || '',
-        travelers: _selData?.travelers || 0,
+        origin: _selD?.origin || 'Unknown',
+        depDate: _selD?.depDate || '',
+        retDate: _selD?.retDate || '',
+        travelers: _selD?.travelers || 0,
         nights: _selNights || 0
       },
       selections: {
-        outboundFlight: tripSel.ob ? tripSel.ob[0] : null,
-        returnFlight: tripSel.ret ? tripSel.ret[0] : null,
-        hotel: tripSel.htl ? tripSel.htl[0] : null
+        outboundFlight: obFlight ? {
+          airline: obFlight.airline,
+          flightNumber: obFlight.flight_number,
+          departureTime: obFlight.departure_time,
+          arrivalTime: obFlight.arrival_time,
+          duration: obFlight.duration,
+          price: obFlight.total_price
+        } : null,
+        returnFlight: retFlight ? {
+          airline: retFlight.airline,
+          flightNumber: retFlight.flight_number,
+          departureTime: retFlight.departure_time,
+          arrivalTime: retFlight.arrival_time,
+          duration: retFlight.duration,
+          price: retFlight.total_price
+        } : null,
+        hotel: hotel ? {
+          name: hotel.name,
+          brand: hotel.brand,
+          stars: hotel.stars,
+          location: hotel.location,
+          pricePerNight: hotel.price_per_night,
+          totalPrice: hotel.total_price,
+          image: hotel.image_url,
+          roomCapacity: hotel.room_capacity,
+          bathroom: hotel.bathroom
+        } : null
       },
-      selectedAttractions: Array.from(_selectedSpots).map(i => _plannerSpots[i]?.name || ''),
-      selectedRestaurants: Array.from(_selectedRestaurants).map(i => _plannerRestaurants[i]?.name || ''),
+      selectedAttractions: Array.from(_selectedSpots).map(i => ({
+        name: _plannerSpots[i]?.name || '',
+        category: _plannerSpots[i]?.category || '',
+        image: _plannerSpots[i]?.image_url || ''
+      })).filter(a => a.name),
+      selectedRestaurants: Array.from(_selectedRestaurants).map(i => ({
+        name: _plannerRestaurants[i]?.name || '',
+        cuisine: _plannerRestaurants[i]?.cuisine || '',
+        image: _plannerRestaurants[i]?.image_url || ''
+      })).filter(r => r.name),
       itinerary: itineraryDiv.innerText
     };
 
