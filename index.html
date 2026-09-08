@@ -1609,8 +1609,8 @@
 
   function buildRequestBody(prompt, provider) {
     if (provider === 'gemini') return JSON.stringify({ prompt });
-    if (provider === 'openai') return JSON.stringify({ model: 'gpt-4o', max_tokens: 20000, messages: [{ role: 'user', content: prompt }] });
-    return JSON.stringify({ model: 'claude-opus-4-6', max_tokens: 20000, messages: [{ role: 'user', content: prompt }] });
+    if (provider === 'openai') return JSON.stringify({ model: 'gpt-4o', max_tokens: 14000, messages: [{ role: 'user', content: prompt }] });
+    return JSON.stringify({ model: 'claude-opus-4-6', max_tokens: 14000, messages: [{ role: 'user', content: prompt }] });
   }
 
   function extractText(data, provider) {
@@ -1700,111 +1700,30 @@
 
   // ─── BUILD PROMPT ───
   function buildPrompt(d) {
-    const brandStr = d.brands.length ? d.brands.join(', ') : 'Any brand';
     const budgetPerNight = parseBudgetPerNight(d.budget);
     const nights = Math.round((new Date(d.retDate) - new Date(d.depDate)) / 86400000);
 
-    return `You are a professional travel agent AI. The user wants to find flights and hotels.
-
-Search parameters:
-- Origin: ${d.origin}
-- Destination: ${d.destination}
-- Departure: ${d.depDate}
-- Return date: ${d.retDate} (${nights} nights)
-- Travelers: ${d.travelers}
-- Cabin: ${d.cabin}
-- Flexible dates: ${d.flexDates ? `Yes, ±${d.flexDaysRange} days` : 'No'}
-- Flexible destination: ${d.flexLocation ? `Yes, within ${d.flexMiles} miles of ${d.destination}` : 'No'}
-- Preferred hotel brands: ${brandStr}
-- Preferred hotel location: ${d.hotelLocation || 'Any area'}
-- Budget per night: ${budgetPerNight}
-- Hotel stars: ${d.stars === 'any' ? 'Any' : d.stars + '+'}
-
-Return ONLY valid raw JSON (no markdown, no explanation) using this exact structure:
-
+    return `Return ONLY valid raw JSON:
 {
-  "summary": "One sentence overview",
-  "outbound_flights": [
-    {
-      "airline": "Korean Air",
-      "flight_number": "KE 601",
-      "departure_time": "08:30",
-      "arrival_time": "11:05",
-      "duration": "2h 35m",
-      "stops": 0,
-      "stop_city": "",
-      "price_per_person": 285,
-      "total_price": 570,
-      "cabin_class": "Economy",
-      "highlights": ["Nonstop", "Meal included"],
-      "flexible_date": "",
-      "flexible_dest": ""
-    }
-  ],
-  "return_flights": [
-    {
-      "airline": "Asiana Airlines",
-      "flight_number": "OZ 102",
-      "departure_time": "14:00",
-      "arrival_time": "16:40",
-      "duration": "2h 40m",
-      "stops": 0,
-      "stop_city": "",
-      "price_per_person": 310,
-      "total_price": 620,
-      "cabin_class": "Economy",
-      "highlights": ["Nonstop", "USB charging"],
-      "flexible_date": "",
-      "flexible_dest": ""
-    }
-  ],
-  "hotels": [
-    {
-      "name": "Hotel Example",
-      "brand": "Marriott",
-      "stars": 4,
-      "location": "City Centre",
-      "distance_from_center": "0.3 miles",
-      "price_per_night": 150,
-      "total_price": 1050,
-      "amenities": ["Free WiFi", "Pool"],
-      "rating": 4.5,
-      "highlights": ["Great location"],
-      "image_url": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400&h=300&fit=crop",
-      "image_urls": [
-        "https://images.unsplash.com/photo-1611894372121-98a5e56ff6bf?w=120&h=80&fit=crop",
-        "https://images.unsplash.com/photo-1584132604428-5520b897e298?w=120&h=80&fit=crop",
-        "https://images.unsplash.com/photo-1618164436241-92473af239dd?w=120&h=80&fit=crop"
-      ],
-      "room_capacity": "2 guests",
-      "bathroom": "Private bathroom with shower, hairdryer",
-      "flexible_dest": ""
-    }
-  ]
-  "best_deals": [
-    {
-      "outbound_index": 0,
-      "return_index": 0,
-      "hotel_index": 0,
-      "total_trip_cost": 2240,
-      "outbound_cost": 570,
-      "return_cost": 620,
-      "hotel_cost": 1050,
-      "savings_vs_typical": "15%",
-      "reason": "Best value combination"
-    }
-  ]
+  "outbound_flights": [{"airline":"","flight_number":"","departure_time":"","arrival_time":"","duration":"","stops":0,"price_per_person":0,"total_price":0}],
+  "return_flights": [{"airline":"","flight_number":"","departure_time":"","arrival_time":"","duration":"","stops":0,"price_per_person":0,"total_price":0}],
+  "hotels": [{"name":"","brand":"","stars":0,"location":"","price_per_night":0,"total_price":0,"amenities":[],"rating":0,"image_url":"","image_urls":["","",""],"room_capacity":"2 guests","bathroom":"Private bathroom"}],
+  "best_deals": [{"outbound_index":0,"return_index":0,"hotel_index":0,"total_trip_cost":0}]
 }
 
-REQUIREMENTS — never fewer than specified:
-- outbound_flights: exactly 8 options from ${d.origin} to ${d.destination} on ${d.depDate}
-- return_flights: exactly 8 options from ${d.destination} back to ${d.origin} on ${d.retDate}
-- hotels: exactly 8 options
+Find flights & hotels:
+- FROM: ${d.origin} TO: ${d.destination}
+- DEP: ${d.depDate}, RET: ${d.retDate} (${nights}n)
+- ${d.travelers} travelers, ${d.cabin} cabin
+- Hotels: ${budgetPerNight}, ${d.hotelLocation || 'any area'}, ${d.stars === 'any' ? 'any stars' : d.stars + '+ stars'}
 
-For outbound AND return flights, vary departure times across morning (05:00–09:00), midday (10:00–14:00), afternoon (14:00–18:00), and evening (18:00–23:59). Use different airlines. Mix nonstop and 1-stop. Include a budget, mid-range, and premium option.
-For hotels: STRICTLY respect the budget per night limit. Mix 3★, 4★, 5★ within the budget; different neighbourhoods. If budget is "$150–$250/night", ALL hotels MUST be between $150–$250 per night. Include image_url for each hotel with realistic Unsplash URLs of luxury hotel rooms/lobbies (format: https://images.unsplash.com/photo-XXXXXXXXX?w=400&h=300&fit=crop).
-If flexible dates/destinations enabled, mark 1–2 options in flexible_date or flexible_dest.
-Make all prices realistic for the route and season. Return only raw JSON.`;
+MUST provide:
+- 8 outbound flights (mix times: morning, midday, afternoon, evening; nonstop & 1-stop)
+- 8 return flights (same time variation)
+- 8 hotels (within budget, different locations)
+- 2-3 best deal combos
+
+Each hotel image_url use real Unsplash photo ID. Realistic prices. JSON ONLY.`;
   }
 
   // ─── LOADING ANIMATION ───
@@ -2653,29 +2572,9 @@ Vary prices and departure times.`;
     const budgetPerNight = parseBudgetPerNight(_selD.budget);
     const preferredLocation = _selD.hotelLocation || 'any area';
 
-    const prompt = `Return ONLY a valid JSON object, no markdown, no explanation:
-{"hotels":[]}
-
-Provide 8 more hotel options in ${_selD.destination} for ${_selD.travelers} guests, check-in ${_selD.depDate}, check-out ${_selD.retDate} (${_selNights} nights).
-STRICT CONSTRAINTS:
-- Budget per night: ${budgetPerNight}
-- Preferred location: ${preferredLocation}
-- Do NOT include these already-shown hotels: ${skip}
-
-Schema for each item: {
-  "name":"","brand":"","stars":0,"rating":"","location":"","distance_from_center":"",
-  "amenities":[],"highlights":[],"price_per_night":0,"total_price":0,
-  "image_url":"","image_urls":["","",""],
-  "room_capacity":"2 guests","bathroom":"Private bathroom"
-}
-Requirements:
-- STRICTLY respect budget per night limit
-- Focus on ${preferredLocation}
-- image_url: Unsplash photo with real ID (e.g., https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400&h=300&fit=crop)
-- image_urls: array of 3-4 different room/amenity photos
-- room_capacity: how many guests this room sleeps
-- bathroom: amenities in the bathroom
-Vary neighbourhoods but stick to budget and location.`;
+    const prompt = `8 more hotels in ${_selD.destination}, ${budgetPerNight}, ${preferredLocation}. NOT: ${skip}
+JSON only: {"hotels":[{"name":"","brand":"","stars":0,"location":"","price_per_night":0,"total_price":0,"amenities":[],"image_url":"","image_urls":["","",""],"room_capacity":"","bathroom":""}]}
+MUST: 8 hotels, budget limit, Unsplash real photo IDs.`;
 
     try {
       const apiKey   = document.getElementById('apiKey').value.trim();
@@ -2770,36 +2669,11 @@ Vary neighbourhoods but stick to budget and location.`;
     const provider = getProvider();
     const dest     = _selD?.destination || 'the destination';
 
-    const prompt = `You are a travel expert. List 10 popular tourist spots, landmarks, and activities in ${dest}.
-Return ONLY valid raw JSON (no markdown, no explanation):
+    const prompt = `List 10 popular spots in ${dest}. JSON only, no markdown:
 {
-  "spots": [
-    {
-      "name": "Spot Name",
-      "category": "Landmark",
-      "description": "Short description of the spot.",
-      "duration": "2–3 hours",
-      "best_time": "Morning",
-      "image_url": "https://images.unsplash.com/photo-XXXXXXXXX?w=600&h=400&fit=crop",
-      "image_urls": [
-        "https://images.unsplash.com/photo-YYYYYYYYY?w=120&h=80&fit=crop",
-        "https://images.unsplash.com/photo-ZZZZZZZ?w=120&h=80&fit=crop",
-        "https://images.unsplash.com/photo-AAAAAAA?w=120&h=80&fit=crop"
-      ],
-      "tags": ["iconic", "views"]
-    }
-  ]
+  "spots": [{"name":"","category":"","description":"","duration":"","best_time":"","image_url":"","image_urls":["","",""]}]
 }
-
-Requirements:
-- Exactly 10 spots
-- Vary categories: Landmark, Museum, Nature, Food, Nightlife, Shopping, Adventure, Culture, Beach, Art
-- image_url: main realistic Unsplash photo (format: https://images.unsplash.com/photo-XXXXXXXXXX?w=600&h=400&fit=crop)
-- image_urls: array of 3-4 different high-quality Unsplash photos of the spot (format: https://images.unsplash.com/photo-XXXXXXXXXX?w=120&h=80&fit=crop)
-- description: 1–2 sentences, specific
-- duration: realistic visit duration
-- best_time: Morning / Afternoon / Evening / Any
-Return only raw JSON.`;
+MUST: 10 spots, varied categories, Unsplash real photo IDs.`;
 
     try {
       const resp = await fetch('/api/proxy', {
@@ -2910,38 +2784,11 @@ Return only raw JSON.`;
     document.getElementById('itineraryPhase').style.display = 'none';
     document.getElementById('plannerLoading').classList.add('visible');
 
-    const prompt = `You are a food and travel expert. List 15 popular restaurants in ${dest} with different cuisines and price ranges.
-Return ONLY valid raw JSON (no markdown, no explanation):
+    const prompt = `List 15 popular restaurants in ${dest}. JSON only, no markdown:
 {
-  "restaurants": [
-    {
-      "name": "Restaurant Name",
-      "cuisine": "Italian",
-      "price_range": "$$$",
-      "description": "Short description of the restaurant.",
-      "meal_type": "Dinner",
-      "popular_menu": "Pasta Carbonara, Risotto, Tiramisu",
-      "image_url": "https://images.unsplash.com/photo-XXXXXXXXX?w=600&h=400&fit=crop",
-      "image_urls": [
-        "https://images.unsplash.com/photo-YYYYYYYYY?w=120&h=80&fit=crop",
-        "https://images.unsplash.com/photo-ZZZZZZZ?w=120&h=80&fit=crop",
-        "https://images.unsplash.com/photo-AAAAAAA?w=120&h=80&fit=crop"
-      ],
-      "tags": ["romantic", "fine-dining"]
-    }
-  ]
+  "restaurants": [{"name":"","cuisine":"","price_range":"","description":"","meal_type":"","popular_menu":"","image_url":"","image_urls":["","",""]}]
 }
-
-Requirements:
-- Exactly 15 restaurants
-- Vary cuisines: Italian, Japanese, Local, French, Asian Fusion, Indian, Mediterranean, Seafood, Vegetarian, Street Food, etc.
-- price_range: $, $$, $$$, or $$$$
-- meal_type: Breakfast, Lunch, or Dinner (mix them)
-- popular_menu: list 3-4 of the restaurant's most famous dishes (e.g., "Pasta Carbonara, Tiramisu, Espresso")
-- image_url: main realistic Unsplash food/restaurant photo (e.g., https://images.unsplash.com/photo-1504674900152-fd01b4cb7547?w=600&h=400&fit=crop)
-- image_urls: array of 3-4 different high-quality photos of the restaurant interior/dishes/exterior (e.g., https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=120&h=80&fit=crop)
-- description: 1 sentence, specific
-Return only raw JSON.`;
+MUST: 15 restaurants, varied cuisines/price ranges, popular_menu with 3-4 dishes, Unsplash real photo IDs.`;
 
     try {
       const resp = await fetch('/api/proxy', {
@@ -3042,21 +2889,9 @@ Return only raw JSON.`;
     document.getElementById('plannerTitle').textContent = '🗺️ Plan Your Trip to ' + dest;
     document.getElementById('plannerLoading').classList.add('visible');
 
-    const prompt = `You are a travel expert. List 10 DIFFERENT (not the ones listed below) popular tourist spots, landmarks, and activities in ${dest}.
-Do NOT include: ${existingSpots}
-Return ONLY valid raw JSON (no markdown, no explanation):
-{
-  "spots": [
-    {"name": "","category": "","description": "","duration": "","best_time": "","image_url": "","image_urls": ["","",""],"tags": []}
-  ]
-}
-Requirements:
-- Exactly 10 unique spots NOT already listed
-- Vary categories
-- image_url: realistic Unsplash photo (https://images.unsplash.com/photo-XXXXXXXXXX?w=600&h=400&fit=crop)
-- image_urls: array of 3-4 different high-quality photos (https://images.unsplash.com/photo-XXXXXXXXXX?w=120&h=80&fit=crop)
-- description: 1–2 sentences
-Return only raw JSON.`;
+    const prompt = `10 more attractions in ${dest}. NOT: ${existingSpots}
+JSON only: {"spots":[{"name":"","category":"","description":"","duration":"","best_time":"","image_url":"","image_urls":["","",""]}]}
+MUST: 10 unique, varied categories, Unsplash real photo IDs.`;
 
     try {
       const resp = await fetch('/api/proxy', {
@@ -3100,21 +2935,9 @@ Return only raw JSON.`;
     document.getElementById('plannerLoading').classList.add('visible');
     document.getElementById('plannerPanel').classList.add('visible');
 
-    const prompt = `You are a food expert. List 15 DIFFERENT (not listed below) popular restaurants in ${dest}.
-Do NOT include: ${existingRest}
-Return ONLY valid raw JSON (no markdown, no explanation):
-{
-  "restaurants": [
-    {"name": "","cuisine": "","price_range": "","description": "","meal_type": "","popular_menu": "","image_url": "","image_urls": ["","",""],"tags": []}
-  ]
-}
-Requirements:
-- Exactly 15 unique restaurants NOT already listed
-- Vary cuisines and price ranges
-- popular_menu: 1-2 signature/popular dishes or menu highlights (e.g., "Pad Thai, Green Curry")
-- image_url: realistic food/restaurant photo (https://images.unsplash.com/photo-XXXXXXXXXX?w=600&h=400&fit=crop)
-- image_urls: array of 3-4 different photos of the restaurant/food/interior (https://images.unsplash.com/photo-XXXXXXXXXX?w=120&h=80&fit=crop)
-Return only raw JSON.`;
+    const prompt = `15 more restaurants in ${dest}. NOT: ${existingRest}
+JSON only: {"restaurants":[{"name":"","cuisine":"","price_range":"","description":"","meal_type":"","popular_menu":"","image_url":"","image_urls":["","",""]}]}
+MUST: 15 unique, varied cuisines, popular_menu with dishes, Unsplash real photo IDs.`;
 
     try {
       const resp = await fetch('/api/proxy', {
@@ -3203,54 +3026,14 @@ Return only raw JSON.`;
       `- ${r.name} (${r.cuisine}, ${r.price_range}, ${r.meal_type})`
     ).join('\n');
 
-    const prompt = `You are an expert travel planner. Create a detailed day-by-day itinerary for a trip to ${_selD?.destination}.
+    const prompt = `Create itinerary for ${_selD?.destination}, ${_selNights} nights. Arrives ${arrivalTime}, departs ${depFlight}.
+Attractions: ${spotLines}
+Restaurants: ${restaurantLines}
 
-Trip details:
-- Destination: ${_selD?.destination}
-- Departure date (outbound flight arrives): ${_selD?.depDate} at ${arrivalTime}
-- Return date (return flight departs): ${_selD?.retDate} at ${depFlight}
-- Hotel: ${hotelName}, ${hotelLocation}
-- Total nights: ${_selNights}
-- Number of travelers: ${_selD?.travelers}
+JSON only, no markdown:
+{"itinerary":[{"day":1,"date":"","theme":"","slots":[{"time":"","activity":"","location":"","notes":"","type":"travel"}]}]}
 
-Selected attractions to include:
-${spotLines}
-
-Selected restaurants:
-${restaurantLines}
-
-Return ONLY valid raw JSON (no markdown, no explanation):
-{
-  "itinerary": [
-    {
-      "day": 1,
-      "date": "${_selD?.depDate}",
-      "theme": "Arrival & First Impressions",
-      "slots": [
-        {
-          "time": "15:00",
-          "activity": "Arrive at airport, transfer to hotel",
-          "location": "${hotelName}",
-          "notes": "Check in",
-          "type": "travel"
-        }
-      ]
-    }
-  ]
-}
-
-Rules:
-- IMPORTANT: Each day must have AT LEAST 5 activities/time slots (breakfast, attractions, lunch, more attractions, dinner, etc.)
-- Day 1 starts after arrival time (${arrivalTime}) — no activities before then
-- Last day must end with hotel checkout and time to reach airport before ${depFlight}
-- Distribute ALL selected attractions across the days
-- Include selected restaurants where appropriate (breakfast, lunch, dinner slots)
-- Vary meal slots: breakfast at hotel, lunch near attractions, dinner at selected restaurants
-- Each slot type: travel | attraction | meal | hotel
-- Times must be sequential within each day (e.g., 08:00, 09:30, 12:00, 14:00, 18:00, 20:00)
-- Include specific time windows and realistic durations
-- Make the itinerary packed with activities and dining experiences
-Return only raw JSON.`;
+MUST: 5+ slots/day, all attractions included, meals at restaurants, day 1 after ${arrivalTime}, last day before ${depFlight}.`;
 
     try {
       const resp = await fetch('/api/proxy', {
