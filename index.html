@@ -1607,6 +1607,13 @@
 
   function getProvider() { return document.getElementById('providerSelect').value; }
 
+  // Add cache-busting parameter to image URLs to prevent browser caching issues
+  function noCacheUrl(url) {
+    if (!url) return '';
+    if (url.includes('?')) return url + '&_cb=' + Date.now();
+    return url + '?_cb=' + Date.now();
+  }
+
   function buildRequestBody(prompt, provider) {
     if (provider === 'gemini') return JSON.stringify({ prompt });
     if (provider === 'openai') return JSON.stringify({ model: 'gpt-4o', max_tokens: 14000, messages: [{ role: 'user', content: prompt }] });
@@ -2172,7 +2179,7 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
         <div class="option-card ${isFirst ? 'best-value' : ''} fade-in" style="animation-delay:${0.1+i*0.08}s">
           ${isFirst ? '<div class="best-tag">Best Value</div>' : ''}
           <div class="hotel-card-body">
-            ${h.image_url ? `<img src="${h.image_url}" alt="${h.name}" class="hotel-image" onerror="this.style.display='none'" />` : ''}
+            ${h.image_url ? `<img src="${h.image_url}" alt="${h.name}" class="hotel-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" />` : ''}
             <div class="hotel-info">
               <div class="hotel-name">${h.name}</div>
               <div class="hotel-brand">${h.brand}</div>
@@ -2184,7 +2191,7 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
               ${h.flexible_dest ? `<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:4px">📍 Nearby: ${h.flexible_dest}</div>` : ''}
               ${imageUrls.length > 0 ? `
               <div class="image-gallery" style="padding:8px 0;margin:8px 0;border-top:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100)">
-                ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${url}" alt="Photo ${idx + 1}" onerror="this.style.display='none'" /></div>`).join('')}
+                ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${url}" alt="Photo ${idx + 1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" /></div>`).join('')}
               </div>
               ` : ''}
               <div class="hotel-amenities">
@@ -2305,7 +2312,7 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
           <div class="deal-flight" style="font-size:12px;color:var(--gray-500)">   ${ob.departure_time || ''} → ${ob.arrival_time || ''} · ${ob.duration || ''}</div>
           <div class="deal-flight">🛬 ${ret.airline || ''} ${ret.flight_number || ''}</div>
           <div class="deal-flight" style="font-size:12px;color:var(--gray-500)">   ${ret.departure_time || ''} → ${ret.arrival_time || ''} · ${ret.duration || ''}</div>
-          ${htl.image_url ? `<img src="${htl.image_url}" alt="${htl.name}" style="width:100%;height:120px;object-fit:cover;border-radius:6px;margin:8px 0" onerror="this.style.display='none'" />` : ''}
+          ${htl.image_url ? `<img src="${htl.image_url}" alt="${htl.name}" style="width:100%;height:120px;object-fit:cover;border-radius:6px;margin:8px 0" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" />` : ''}
           <div class="deal-hotel">🏨 ${htl.name || ''}</div>
           <div style="font-size:12px;color:var(--gray-500);margin-bottom:8px">${htl.stars || 4}★ • ${htl.location || ''} • $${(htl.price_per_night || 0).toLocaleString()}/night</div>
           <button class="deal-select-btn" onclick="applyBestDeal(${JSON.stringify(deal).replace(/"/g,'&quot;')})">
@@ -2336,7 +2343,7 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
       document.getElementById('hotelsList').innerHTML += `
         <div class="option-card fade-in" style="animation-delay:${0.1+i*0.08}s">
           <div class="hotel-card-body">
-            ${h.image_url ? `<img src="${h.image_url}" alt="${h.name}" class="hotel-image" onerror="this.style.display='none'" />` : ''}
+            ${h.image_url ? `<img src="${noCacheUrl(h.image_url)}" alt="${h.name}" class="hotel-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" />` : ''}
             <div class="hotel-info">
               <div class="hotel-name">${h.name}</div>
               <div class="hotel-brand">${h.brand}</div>
@@ -2349,7 +2356,7 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
               <div class="hotel-amenities">${(h.amenities||[]).map(a=>`<span class="amenity">${a}</span>`).join('')}</div>
               ${imageUrls.length > 0 ? `
               <div class="image-gallery" style="padding:8px 0;margin:8px 0;border-top:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100)">
-                ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${url}" alt="Photo ${idx + 1}" onerror="this.style.display='none'" /></div>`).join('')}
+                ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${noCacheUrl(url)}" alt="Photo ${idx + 1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" /></div>`).join('')}
               </div>
               ` : ''}
               <div style="font-size:12px;color:var(--gray-600);margin-top:8px">👥 ${h.room_capacity || '2 guests'}</div>
@@ -2598,7 +2605,7 @@ MUST: 8 hotels, budget limit, Unsplash real photo IDs.`;
         list.innerHTML += `
           <div class="option-card fade-in">
             <div class="hotel-card-body">
-              ${h.image_url ? `<img src="${h.image_url}" alt="${h.name}" class="hotel-image" onerror="this.style.display='none'" />` : ''}
+              ${h.image_url ? `<img src="${noCacheUrl(h.image_url)}" alt="${h.name}" class="hotel-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" />` : ''}
               <div class="hotel-info">
                 <div class="hotel-name">${h.name}</div>
                 <div class="hotel-brand">${h.brand}</div>
@@ -2609,7 +2616,7 @@ MUST: 8 hotels, budget limit, Unsplash real photo IDs.`;
                 </div>
                 ${imageUrls.length > 0 ? `
                 <div class="image-gallery" style="padding:8px 0;margin:8px 0;border-top:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100)">
-                  ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${url}" alt="Photo ${idx + 1}" onerror="this.style.display='none'" /></div>`).join('')}
+                  ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${noCacheUrl(url)}" alt="Photo ${idx + 1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" /></div>`).join('')}
                 </div>
                 ` : ''}
                 <div class="hotel-amenities">${(h.amenities||[]).map(a=>`<span class="amenity">${a}</span>`).join('')}</div>
@@ -2721,11 +2728,11 @@ MUST: 10 spots, varied categories, Unsplash real photo IDs.`;
       const imageUrls = s.image_urls || (s.image_url ? [s.image_url] : []);
       return `
       <div class="spot-card" id="spotCard${cardIdx}" onclick="toggleSpot(${cardIdx})">
-        <img src="${s.image_url || ''}" alt="${s.name}" class="spot-card-img"
-             onerror="this.style.display='none'" />
+        <img src="${noCacheUrl(s.image_url) || ''}" alt="${s.name}" class="spot-card-img"
+             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" />
         ${imageUrls.length > 1 ? `
         <div class="image-gallery" style="padding:6px;border-bottom:1px solid var(--gray-100)">
-          ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${url}" alt="Photo ${idx + 1}" onerror="this.style.display='none'" /></div>`).join('')}
+          ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${noCacheUrl(url)}" alt="Photo ${idx + 1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" /></div>`).join('')}
         </div>
         ` : ''}
         <div class="spot-card-body">
@@ -2829,11 +2836,11 @@ MUST: 15 restaurants, varied cuisines/price ranges, popular_menu with 3-4 dishes
       const imageUrls = r.image_urls || (r.image_url ? [r.image_url] : []);
       return `
       <div class="spot-card" id="restCard${i}" onclick="toggleRestaurant(${i})">
-        <img src="${r.image_url || ''}" alt="${r.name}" class="spot-card-img"
-             onerror="this.style.display='none'" />
+        <img src="${noCacheUrl(r.image_url) || ''}" alt="${r.name}" class="spot-card-img"
+             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" />
         ${imageUrls.length > 0 ? `
         <div class="image-gallery" style="padding:6px;border-bottom:1px solid var(--gray-100)">
-          ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${url}" alt="Photo ${idx + 1}" onerror="this.style.display='none'" /></div>`).join('')}
+          ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${noCacheUrl(url)}" alt="Photo ${idx + 1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" /></div>`).join('')}
         </div>
         ` : ''}
         <div class="spot-card-body">
@@ -2974,11 +2981,11 @@ MUST: 15 unique, varied cuisines, popular_menu with dishes, Unsplash real photo 
       const imageUrls = r.image_urls || (r.image_url ? [r.image_url] : []);
       return `
       <div class="spot-card" id="restCard${cardIdx}" onclick="toggleRestaurant(${cardIdx})">
-        <img src="${r.image_url || ''}" alt="${r.name}" class="spot-card-img"
-             onerror="this.style.display='none'" />
+        <img src="${noCacheUrl(r.image_url) || ''}" alt="${r.name}" class="spot-card-img"
+             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" />
         ${imageUrls.length > 0 ? `
         <div class="image-gallery" style="padding:6px;border-bottom:1px solid var(--gray-100)">
-          ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${url}" alt="Photo ${idx + 1}" onerror="this.style.display='none'" /></div>`).join('')}
+          ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${noCacheUrl(url)}" alt="Photo ${idx + 1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" /></div>`).join('')}
         </div>
         ` : ''}
         <div class="spot-card-body">
