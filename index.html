@@ -1614,6 +1614,27 @@
     return url + '?_cb=' + Date.now();
   }
 
+  // Generate dynamic Unsplash URLs based on keywords (bypasses AI-generated URLs)
+  function getHotelImageUrl(hotelName, brand) {
+    const keywords = [brand, 'luxury', 'hotel'].filter(Boolean).join(',');
+    return `https://source.unsplash.com/600x400/?${encodeURIComponent(keywords)}&${Math.random()}`;
+  }
+
+  function getAttractionImageUrl(category) {
+    const keywords = [category, 'tourism', 'landmark'].filter(Boolean).join(',');
+    return `https://source.unsplash.com/600x400/?${encodeURIComponent(keywords)}&${Math.random()}`;
+  }
+
+  function getRestaurantImageUrl(cuisine) {
+    const keywords = [cuisine, 'restaurant', 'food'].filter(Boolean).join(',');
+    return `https://source.unsplash.com/600x400/?${encodeURIComponent(keywords)}&${Math.random()}`;
+  }
+
+  function getGalleryImageUrl(category, index) {
+    const keywords = [category, 'interior', 'decor'].filter(Boolean).join(',');
+    return `https://source.unsplash.com/120x80/?${encodeURIComponent(keywords)}&${Math.random() + index}`;
+  }
+
   function buildRequestBody(prompt, provider) {
     if (provider === 'gemini') return JSON.stringify({ prompt });
     if (provider === 'openai') return JSON.stringify({ model: 'gpt-4o', max_tokens: 14000, messages: [{ role: 'user', content: prompt }] });
@@ -2342,11 +2363,11 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
     document.getElementById('hotelsList').innerHTML = '';
     (data.hotels || []).forEach((h, i) => {
       const stars = '★'.repeat(Math.min(5, h.stars||4)) + '☆'.repeat(Math.max(0, 5-(h.stars||4)));
-      const imageUrls = h.image_urls || (h.image_url ? [h.image_url] : []);
+      const mainImg = getHotelImageUrl(h.name, h.brand);
       document.getElementById('hotelsList').innerHTML += `
         <div class="option-card fade-in" style="animation-delay:${0.1+i*0.08}s">
           <div class="hotel-card-body">
-            ${h.image_url ? `<img src="${noCacheUrl(h.image_url)}" alt="${h.name}" class="hotel-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" />` : ''}
+            <img src="${mainImg}" alt="${h.name}" class="hotel-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" />
             <div class="hotel-info">
               <div class="hotel-name">${h.name}</div>
               <div class="hotel-brand">${h.brand}</div>
@@ -2357,11 +2378,9 @@ Make all prices realistic for ${d.destination}. Return only raw JSON.`;
               </div>
               ${h.flexible_dest?`<div style="font-size:11px;color:var(--orange);font-weight:600;margin-top:4px">📍 Nearby: ${h.flexible_dest}</div>`:''}
               <div class="hotel-amenities">${(h.amenities||[]).map(a=>`<span class="amenity">${a}</span>`).join('')}</div>
-              ${imageUrls.length > 0 ? `
               <div class="image-gallery" style="padding:8px 0;margin:8px 0;border-top:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100)">
-                ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${noCacheUrl(url)}" alt="Photo ${idx + 1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" /></div>`).join('')}
+                ${[0,1,2].map((idx) => `<div class="gallery-thumb"><img src="${getGalleryImageUrl(h.brand || 'hotel', idx)}" alt="Photo ${idx + 1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" /></div>`).join('')}
               </div>
-              ` : ''}
               <div style="font-size:12px;color:var(--gray-600);margin-top:8px">👥 ${h.room_capacity || '2 guests'}</div>
               <div style="font-size:12px;color:var(--gray-600);margin-top:4px">🚿 ${h.bathroom || 'Private bathroom'}</div>
               <div class="flight-badges" style="margin-top:8px">${(h.highlights||[]).map(hl=>`<span class="badge blue">${hl}</span>`).join('')}</div>
@@ -2607,11 +2626,11 @@ MUST: 8 unique hotels, within budget. EACH needs REAL Unsplash photo IDs:
       newHotels.forEach((h, idx_offset) => {
         const idx   = startIdx + idx_offset;
         const stars = '★'.repeat(Math.min(5, h.stars||4)) + '☆'.repeat(Math.max(0, 5-(h.stars||4)));
-        const imageUrls = h.image_urls || (h.image_url ? [h.image_url] : []);
+        const mainImg = getHotelImageUrl(h.name, h.brand);
         list.innerHTML += `
           <div class="option-card fade-in">
             <div class="hotel-card-body">
-              ${h.image_url ? `<img src="${noCacheUrl(h.image_url)}" alt="${h.name}" class="hotel-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" />` : ''}
+              <img src="${mainImg}" alt="${h.name}" class="hotel-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" />
               <div class="hotel-info">
                 <div class="hotel-name">${h.name}</div>
                 <div class="hotel-brand">${h.brand}</div>
@@ -2620,11 +2639,9 @@ MUST: 8 unique hotels, within budget. EACH needs REAL Unsplash photo IDs:
                   <div class="rating">${h.rating}</div>
                   <div class="hotel-location">📍 ${h.location}${h.distance_from_center?' · '+h.distance_from_center:''}</div>
                 </div>
-                ${imageUrls.length > 0 ? `
                 <div class="image-gallery" style="padding:8px 0;margin:8px 0;border-top:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100)">
-                  ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${noCacheUrl(url)}" alt="Photo ${idx + 1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" /></div>`).join('')}
+                  ${[0,1,2].map((idx) => `<div class="gallery-thumb"><img src="${getGalleryImageUrl(h.brand || 'hotel', idx)}" alt="Photo ${idx + 1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" /></div>`).join('')}
                 </div>
-                ` : ''}
                 <div class="hotel-amenities">${(h.amenities||[]).map(a=>`<span class="amenity">${a}</span>`).join('')}</div>
                 <div style="font-size:12px;color:var(--gray-600);margin-top:8px">👥 ${h.room_capacity || '2 guests'}</div>
                 <div style="font-size:12px;color:var(--gray-600);margin-top:4px">🚿 ${h.bathroom || 'Private bathroom'}</div>
@@ -2734,16 +2751,14 @@ EACH spot needs REAL Unsplash photo IDs:
     const grid = document.getElementById('spotsGrid');
     const html = spots.map((s, i) => {
       const cardIdx = startIdx + i;
-      const imageUrls = s.image_urls || (s.image_url ? [s.image_url] : []);
+      const mainImg = getAttractionImageUrl(s.category);
       return `
       <div class="spot-card" id="spotCard${cardIdx}" onclick="toggleSpot(${cardIdx})">
-        <img src="${noCacheUrl(s.image_url) || ''}" alt="${s.name}" class="spot-card-img"
+        <img src="${mainImg}" alt="${s.name}" class="spot-card-img"
              onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" />
-        ${imageUrls.length > 1 ? `
         <div class="image-gallery" style="padding:6px;border-bottom:1px solid var(--gray-100)">
-          ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${noCacheUrl(url)}" alt="Photo ${idx + 1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" /></div>`).join('')}
+          ${[0,1,2].map((idx) => `<div class="gallery-thumb"><img src="${getGalleryImageUrl(s.category, idx)}" alt="Photo ${idx + 1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" /></div>`).join('')}
         </div>
-        ` : ''}
         <div class="spot-card-body">
           <span class="spot-card-category">${s.category || 'Attraction'}</span>
           <div class="spot-card-name">${s.name}</div>
@@ -2846,16 +2861,14 @@ EACH restaurant needs REAL Unsplash food/restaurant photos:
     _plannerRestaurants = restaurants;
     const grid = document.getElementById('restaurantsGrid');
     grid.innerHTML = restaurants.map((r, i) => {
-      const imageUrls = r.image_urls || (r.image_url ? [r.image_url] : []);
+      const mainImg = getRestaurantImageUrl(r.cuisine);
       return `
       <div class="spot-card" id="restCard${i}" onclick="toggleRestaurant(${i})">
-        <img src="${noCacheUrl(r.image_url) || ''}" alt="${r.name}" class="spot-card-img"
+        <img src="${mainImg}" alt="${r.name}" class="spot-card-img"
              onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" />
-        ${imageUrls.length > 0 ? `
         <div class="image-gallery" style="padding:6px;border-bottom:1px solid var(--gray-100)">
-          ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${noCacheUrl(url)}" alt="Photo ${idx + 1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" /></div>`).join('')}
+          ${[0,1,2].map((idx) => `<div class="gallery-thumb"><img src="${getGalleryImageUrl(r.cuisine, idx)}" alt="Photo ${idx + 1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" /></div>`).join('')}
         </div>
-        ` : ''}
         <div class="spot-card-body">
           <span class="spot-card-category">${r.cuisine || 'Restaurant'}</span>
           <div class="spot-card-name">${r.name}</div>
@@ -2996,16 +3009,14 @@ MUST: 15 unique restaurants, varied cuisines/prices. EACH needs REAL Unsplash fo
     _plannerRestaurants = _plannerRestaurants.concat(restaurants);
     const html = restaurants.map((r, i) => {
       const cardIdx = existingCards + i;
-      const imageUrls = r.image_urls || (r.image_url ? [r.image_url] : []);
+      const mainImg = getRestaurantImageUrl(r.cuisine);
       return `
       <div class="spot-card" id="restCard${cardIdx}" onclick="toggleRestaurant(${cardIdx})">
-        <img src="${noCacheUrl(r.image_url) || ''}" alt="${r.name}" class="spot-card-img"
+        <img src="${mainImg}" alt="${r.name}" class="spot-card-img"
              onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" />
-        ${imageUrls.length > 0 ? `
         <div class="image-gallery" style="padding:6px;border-bottom:1px solid var(--gray-100)">
-          ${imageUrls.map((url, idx) => `<div class="gallery-thumb"><img src="${noCacheUrl(url)}" alt="Photo ${idx + 1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" /></div>`).join('')}
+          ${[0,1,2].map((idx) => `<div class="gallery-thumb"><img src="${getGalleryImageUrl(r.cuisine, idx)}" alt="Photo ${idx + 1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E';this.style.display='none'" /></div>`).join('')}
         </div>
-        ` : ''}
         <div class="spot-card-body">
           <span class="spot-card-category">${r.cuisine || 'Restaurant'}</span>
           <div class="spot-card-name">${r.name}</div>
