@@ -1727,10 +1727,13 @@ Find flights & hotels:
 MUST provide:
 - 8 outbound flights (mix times: morning, midday, afternoon, evening; nonstop & 1-stop)
 - 8 return flights (same time variation)
-- 8 hotels (within budget, different locations)
+- 8 hotels (within budget, different locations, EACH with valid Unsplash photo IDs)
 - 2-3 best deal combos
 
-Each hotel image_url use real Unsplash photo ID. Realistic prices. JSON ONLY.`;
+image_url: Use REAL Unsplash photo IDs only (luxury hotel rooms, lobbies, exteriors). Format: https://images.unsplash.com/photo-1234567890123456789?w=400&h=300&fit=crop
+image_urls: 3-4 different REAL Unsplash photo IDs of the hotel/rooms
+room_capacity & bathroom: Always include realistic details
+Realistic prices. JSON ONLY.`;
   }
 
   // ─── LOADING ANIMATION ───
@@ -2581,7 +2584,10 @@ Vary prices and departure times.`;
 
     const prompt = `8 more hotels in ${_selD.destination}, ${budgetPerNight}, ${preferredLocation}. NOT: ${skip}
 JSON only: {"hotels":[{"name":"","brand":"","stars":0,"location":"","price_per_night":0,"total_price":0,"amenities":[],"image_url":"","image_urls":["","",""],"room_capacity":"","bathroom":""}]}
-MUST: 8 hotels, budget limit, Unsplash real photo IDs.`;
+MUST: 8 unique hotels, within budget. EACH needs REAL Unsplash photo IDs:
+- image_url: hotel room/lobby (https://images.unsplash.com/photo-123456789?w=400&h=300&fit=crop)
+- image_urls: 3 different hotel/room photos
+- Include room_capacity & bathroom details`;
 
     try {
       const apiKey   = document.getElementById('apiKey').value.trim();
@@ -2680,7 +2686,10 @@ MUST: 8 hotels, budget limit, Unsplash real photo IDs.`;
 {
   "spots": [{"name":"","category":"","description":"","duration":"","best_time":"","image_url":"","image_urls":["","",""]}]
 }
-MUST: 10 spots, varied categories, Unsplash real photo IDs.`;
+MUST: 10 unique spots, varied categories (Landmark/Museum/Nature/Food/Nightlife/Shopping/Adventure/Culture/Beach/Art).
+EACH spot needs REAL Unsplash photo IDs:
+- image_url: main photo of the spot (https://images.unsplash.com/photo-123456789?w=600&h=400&fit=crop)
+- image_urls: 3 different photos showing the spot/area`;
 
     try {
       const resp = await fetch('/api/proxy', {
@@ -2795,7 +2804,11 @@ MUST: 10 spots, varied categories, Unsplash real photo IDs.`;
 {
   "restaurants": [{"name":"","cuisine":"","price_range":"","description":"","meal_type":"","popular_menu":"","image_url":"","image_urls":["","",""]}]
 }
-MUST: 15 restaurants, varied cuisines/price ranges, popular_menu with 3-4 dishes, Unsplash real photo IDs.`;
+MUST: 15 unique restaurants, varied cuisines and price ranges.
+EACH restaurant needs REAL Unsplash food/restaurant photos:
+- image_url: dish or restaurant exterior (https://images.unsplash.com/photo-123456789?w=600&h=400&fit=crop)
+- image_urls: 3 different photos of food/interior/exterior
+- popular_menu: list 3-4 signature dishes`;
 
     try {
       const resp = await fetch('/api/proxy', {
@@ -2898,7 +2911,9 @@ MUST: 15 restaurants, varied cuisines/price ranges, popular_menu with 3-4 dishes
 
     const prompt = `10 more attractions in ${dest}. NOT: ${existingSpots}
 JSON only: {"spots":[{"name":"","category":"","description":"","duration":"","best_time":"","image_url":"","image_urls":["","",""]}]}
-MUST: 10 unique, varied categories, Unsplash real photo IDs.`;
+MUST: 10 unique attractions, varied categories. EACH needs REAL Unsplash photo IDs:
+- image_url: main spot photo (https://images.unsplash.com/photo-123456789?w=600&h=400&fit=crop)
+- image_urls: 3 different photos of the attraction`;
 
     try {
       const resp = await fetch('/api/proxy', {
@@ -2944,7 +2959,10 @@ MUST: 10 unique, varied categories, Unsplash real photo IDs.`;
 
     const prompt = `15 more restaurants in ${dest}. NOT: ${existingRest}
 JSON only: {"restaurants":[{"name":"","cuisine":"","price_range":"","description":"","meal_type":"","popular_menu":"","image_url":"","image_urls":["","",""]}]}
-MUST: 15 unique, varied cuisines, popular_menu with dishes, Unsplash real photo IDs.`;
+MUST: 15 unique restaurants, varied cuisines/prices. EACH needs REAL Unsplash food/restaurant photos:
+- image_url: dish or restaurant (https://images.unsplash.com/photo-123456789?w=600&h=400&fit=crop)
+- image_urls: 3 different food/interior/exterior photos
+- popular_menu: 3-4 signature dishes`;
 
     try {
       const resp = await fetch('/api/proxy', {
