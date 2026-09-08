@@ -1614,25 +1614,25 @@
     return url + '?_cb=' + Date.now();
   }
 
-  // Generate dynamic Unsplash URLs based on keywords (bypasses AI-generated URLs)
+  // Generate dynamic image URLs with randomization to prevent caching and ensure variety
   function getHotelImageUrl(hotelName, brand) {
-    const keywords = [brand, 'luxury', 'hotel'].filter(Boolean).join(',');
-    return `https://source.unsplash.com/600x400/?${encodeURIComponent(keywords)}&${Math.random()}`;
+    const seed = Math.floor(Math.random() * 1000) + Date.now();
+    return `https://picsum.photos/600/400?random=${seed}&hotel`;
   }
 
   function getAttractionImageUrl(category) {
-    const keywords = [category, 'tourism', 'landmark'].filter(Boolean).join(',');
-    return `https://source.unsplash.com/600x400/?${encodeURIComponent(keywords)}&${Math.random()}`;
+    const seed = Math.floor(Math.random() * 1000) + Date.now();
+    return `https://picsum.photos/600/400?random=${seed}&landmark`;
   }
 
   function getRestaurantImageUrl(cuisine) {
-    const keywords = [cuisine, 'restaurant', 'food'].filter(Boolean).join(',');
-    return `https://source.unsplash.com/600x400/?${encodeURIComponent(keywords)}&${Math.random()}`;
+    const seed = Math.floor(Math.random() * 1000) + Date.now();
+    return `https://picsum.photos/600/400?random=${seed}&food`;
   }
 
   function getGalleryImageUrl(category, index) {
-    const keywords = [category, 'interior', 'decor'].filter(Boolean).join(',');
-    return `https://source.unsplash.com/120x80/?${encodeURIComponent(keywords)}&${Math.random() + index}`;
+    const seed = Math.floor(Math.random() * 1000) + Date.now() + index;
+    return `https://picsum.photos/120/80?random=${seed}`;
   }
 
   function buildRequestBody(prompt, provider) {
